@@ -38,6 +38,10 @@ from scipy.optimize import linear_sum_assignment
 from pandorica.stitch.matching.mt_transform import (
     fit_rigid_transform_2d,
 )
+from pandorica.stitch.matching.constellation import (
+    descriptor_cost,
+    shape_context_descriptors,
+)
 
 
 def _vmf_direction_cost(d1: np.ndarray, d2: np.ndarray) -> float:
@@ -116,7 +120,8 @@ def _resolve_max_dist(
 
 
 def _cost_matrix(ref, mov, rho, max_dist, max_angle_deg, w_dist,
-                 sign_min_xy=0.2, sign_min_cos=0.0):
+                 sign_min_xy=0.2, sign_min_cos=0.0,
+                 ref_desc=None, mov_desc=None, w_const=0.0):
     """Pairwise cost; np.inf where the distance/angle/orientation gates are exceeded.
 
     ``max_dist`` is in the same units as the endpoint positions (Å in the
@@ -128,11 +133,18 @@ def _cost_matrix(ref, mov, rho, max_dist, max_angle_deg, w_dist,
     signed in-plane cosine is below ``sign_min_cos`` when both tangents are reliable
     (in-plane magnitude ≥ ``sign_min_xy``). Near-vertical pairs (unreliable in-plane
     sign) are exempt. Set ``sign_min_cos`` very negative to disable.
+
+    When ``w_const > 0`` and shape-context descriptors are supplied (``ref_desc`` /
+    ``mov_desc``, from :func:`constellation.shape_context_descriptors`), each gated
+    pair's distance+direction ``base`` is blended with the χ² distance between the two
+    MTs' local neighbourhood histograms: ``(1-w_const)·base + w_const·constellation``.
+    The constellation term breaks dense-parallel ties the lone-endpoint ``base`` cannot.
     """
     n_ref, n_mov = len(ref), len(mov)
     cost = np.full((n_ref, n_mov), np.inf)
     if max_dist <= 0.0:
         return cost
+    use_const = w_const > 0.0 and ref_desc is not None and mov_desc is not None
     angle_gate = 1.0 - np.cos(np.deg2rad(max_angle_deg))
     for i, r in enumerate(ref):
         for j, m in enumerate(mov):
@@ -145,7 +157,12 @@ def _cost_matrix(ref, mov, rho, max_dist, max_angle_deg, w_dist,
             sc = _signed_inplane_cos(r["dir"], m["dir"], sign_min_xy)
             if sc is not None and sc < sign_min_cos:  # reliable fold-back: reject
                 continue
-            cost[i, j] = w_dist * (d / max_dist) + (1.0 - w_dist) * dir_cost
+            base = w_dist * (d / max_dist) + (1.0 - w_dist) * dir_cost
+            if use_const:
+                base = (1.0 - w_const) * base + w_const * descriptor_cost(
+                    ref_desc[i], mov_desc[j]
+                )
+            cost[i, j] = base
     return cost
 
 
@@ -432,6 +449,9 @@ def match_sections(
     smoothness_max_chord_tangent_deg: float = 60.0,
     smoothness_chord_check_rho: float = 1.0,
     smoothness_min_xy: float = 0.2,
+    constellation_weight: float = 0.0,
+    constellation_k: int = 10,
+    constellation_r_max_rho: float = 6.0,
 ):
     """
     Match two boundary-endpoint sets with ρ-scaled gates, vMF direction, and W1.
@@ -484,6 +504,12 @@ def match_sections(
         the tangent–tangent gate applies.
     :param smoothness_min_xy: minimum XY-tangent magnitude for the smoothness
         verdict to be considered reliable (near-vertical pairs are skipped).
+    :param constellation_weight: blend weight (0 = off, unchanged behaviour) for the
+        local shape-context (neighbourhood-pattern) term added to each gated pair's
+        cost. Breaks dense-parallel ties the lone endpoint+tangent cost cannot. ~0.3–0.5
+        is a reasonable range; 1.0 ignores distance+direction entirely (not advised).
+    :param constellation_k: number of nearest boundary neighbours in the descriptor.
+    :param constellation_r_max_rho: descriptor neighbour radius, in ρ.
     :return: ``(matches, ref_xy, mov_xy, confidence, id_pairs)``. ``matches`` is
         the list of ``(ref_idx, mov_idx, cost)`` into the *deduped* endpoint
         lists; ``id_pairs`` is the parallel ``(ref_mt_id, mov_mt_id, cost)``
@@ -495,9 +521,20 @@ def match_sections(
     if len(ref) == 0 or len(mov) == 0:
         return [], *empty, _confidence(*empty, [], len(ref), len(mov), rho), []
 
+    ref_desc = mov_desc = None
+    if constellation_weight > 0.0:
+        ref_desc = shape_context_descriptors(
+            ref, rho, k=constellation_k, r_max_rho=constellation_r_max_rho
+        )
+        mov_desc = shape_context_descriptors(
+            mov, rho, k=constellation_k, r_max_rho=constellation_r_max_rho
+        )
+
     max_dist = _resolve_max_dist(rho, max_dist_rho, min_dist_A, max_dist_A)
     cost = _cost_matrix(ref, mov, rho, max_dist, max_angle_deg, w_dist,
-                        sign_min_xy=sign_min_xy, sign_min_cos=sign_min_cos)
+                        sign_min_xy=sign_min_xy, sign_min_cos=sign_min_cos,
+                        ref_desc=ref_desc, mov_desc=mov_desc,
+                        w_const=constellation_weight)
     matches = _assign(cost)
     if not matches:
         return [], *empty, _confidence(*empty, [], len(ref), len(mov), rho), []

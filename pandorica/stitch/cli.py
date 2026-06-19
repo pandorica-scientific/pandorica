@@ -151,6 +151,9 @@ def run_stitch(
     warp_omega: float = 0.3,
     warp_tangent_weight: float = 0.4,
     cut_vertical_jog_rho: float = 2.0,
+    constellation_weight: float = 0.0,
+    constellation_k: int = 10,
+    constellation_r_max_rho: float = 6.0,
     zblend: bool = True,
     cpd_coarse: bool = True,
     downscale: int = 1,
@@ -186,6 +189,15 @@ def run_stitch(
         have no reliable in-plane direction, so the direction-based chain split can't judge
         them; a large jog means two different microtubules were joined. Conservative (``2.0``):
         on a healthy stack no near-vertical pair clears it.
+    :param constellation_weight: blend in a local shape-context (neighbourhood-pattern) term
+        in the MT matcher (0 = off, current behaviour). In dense parallel bundles an MT and its
+        neighbour have near-identical position+tangent, so the assignment swaps them; this term
+        scores each pair on how well its whole local neighbourhood arrangement agrees, which a lone
+        neighbour does not reproduce. Try ~0.3–0.5; higher leans more on the pattern than distance.
+    :param constellation_k: number of nearest boundary neighbours in the constellation
+        descriptor (only used when ``constellation_weight > 0``).
+    :param constellation_r_max_rho: constellation neighbour radius, in ρ (only used when
+        ``constellation_weight > 0``).
     :param zblend: Z-varying symmetric warp (else one warp per section).
     :param cpd_coarse: CPD multi-seed coarse rotation search (decoy-/±90°-robust).
     :param downscale: integer volume decimation (1 = full resolution).
@@ -248,6 +260,7 @@ def run_stitch(
         f"warp_omega     : {warp_omega}",
         f"warp_tan_weight: {warp_tangent_weight}",
         f"cut_vert_jog_ρ : {cut_vertical_jog_rho}",
+        f"constellation  : w={constellation_weight} k={constellation_k} r={constellation_r_max_rho}",
         f"zblend         : {zblend}",
         f"cpd_coarse     : {cpd_coarse}",
         f"use_gpu        : {use_gpu}   (resolved device: {device})",
@@ -397,6 +410,9 @@ def run_stitch(
                 warp_omega_max=warp_omega,
                 warp_tangent_weight=warp_tangent_weight,
                 cut_vertical_jog_rho=cut_vertical_jog_rho,
+                constellation_weight=constellation_weight,
+                constellation_k=constellation_k,
+                constellation_r_max_rho=constellation_r_max_rho,
                 progress=_solve_progress,
             )
             t_solve = time.perf_counter() - _ts
@@ -411,6 +427,9 @@ def run_stitch(
                 warp_omega_max=warp_omega,
                 warp_tangent_weight=warp_tangent_weight,
                 cut_vertical_jog_rho=cut_vertical_jog_rho,
+                constellation_weight=constellation_weight,
+                constellation_k=constellation_k,
+                constellation_r_max_rho=constellation_r_max_rho,
                 cpd_coarse=cpd_coarse,
                 allow_scale=allow_scale,
                 lambda_scale=lambda_scale,
