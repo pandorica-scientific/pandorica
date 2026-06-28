@@ -1,0 +1,13 @@
+# Keeps the README citation version in step with pandorica/_version.py.
+# Install once with:  pre-commit install
+# Run on demand with: pre-commit run --all-files
+repos:
+  - repo: local
+    hooks:
+      - id: sync-citation-version
+        name: Sync README citation version from _version.py
+        entry: python scripts/sync_version.py
+        language: system
+        # Only trigger when the version source or the README changes.
+        files: ^(pandorica/_version\.py|README\.md)$
+        pass_filenames: false

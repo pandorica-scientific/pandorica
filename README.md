@@ -52,7 +52,7 @@ software:
   author  = {Kiewisz, Robert},
   title   = {pandorica: analytical tools for electron microscopy},
   year    = {2026},
-  version = {1.0.3},
+  version = {1.5.0},
   url     = {https://github.com/RRobert92/pandorica},
   license = {PolyForm-Noncommercial-1.0.0}
 }
