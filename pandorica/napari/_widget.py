@@ -1,13 +1,8 @@
-#######################################################################
-#  Pandorica - Analytical tools for cryo-electron microscopy          #
-#                                                                     #
-#  https://github.com/RRobert92                                       #
-#                                                                     #
-#  Robert Kiewisz                                                     #
-#  PolyForm Noncommercial License 1.0.0 - see LICENSE                 #
-#######################################################################
-# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+# PANDORICA — analytical tools for electron microscopy
 # Copyright (c) 2026 Robert Kiewisz
+#
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+# See LICENSE for details.
 
 """
 napari dock widgets for the stitch validator + coarse-GT recorder.

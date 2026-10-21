@@ -1,0 +1,22 @@
+# pandorica experiment index (Pandorica Scientific project standard v1, section 6).
+# There is no experiment tracker yet; these rows record the two measured results already published in the repo,
+# with their source. New experiments get a note docs/experiments/EXP-NNN-<slug>.md, an issue and a row here.
+project: pandorica
+reference: {version: 1.5.0, released: "2026-06-08", where: PyPI}
+experiments:
+  - id: EXP-001
+    date: "2026-06-09"
+    intent: "Warp-phase time on a real 11-section stack after the rescue/scale-gate re-run fix (v1.5.0)"
+    status: done
+    data_kind: real
+    refs: ["CHANGELOG.md [1.5.0]"]
+    output: "Warp phase 463.6 s -> 332.0 s (-28%) on Mac/MPS; stitched output numerically identical."
+    source: repo-notes
+  - id: EXP-002
+    date: null
+    intent: "Contour-rotation fallback accuracy on FemalePN against the microtubule truth"
+    status: done
+    data_kind: real
+    refs: ["pandorica/stitch/README.md (Future work)", "pandorica/stitch/contour_rotation.py"]
+    output: "About 5-13 degrees from the MT truth on four interfaces, where the old NCC search was wrong by 120-170 degrees; thresholds tuned on a single 5-section FemalePN stack."
+    source: repo-notes

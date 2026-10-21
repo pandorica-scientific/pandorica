@@ -1,15 +1,11 @@
 #!/usr/bin/env python3
-#######################################################################
-#  Serial Stitcher - An Automatic tool for tomograms stitching        #
-#                                                                     #
-#  https://github.com/RRobert92                                       #
-#                                                                     #
-#  Robert Kiewisz                                                     #
-#  PolyForm Noncommercial License 1.0.0 - see LICENSE                 #
-#######################################################################
-# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+# PANDORICA — analytical tools for electron microscopy
 # Copyright (c) 2026 Robert Kiewisz
-"""Keep the README citation version in step with the single source of truth.
+#
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+# See LICENSE for details.
+
+"""Keep the README citation version (and CITATION.cff) in step with the single source of truth.
 
 The version lives in ``pandorica/_version.py``. The README citation block
 hard-codes it as ``version = {X}`` because GitHub renders the README as static
@@ -43,6 +39,9 @@ from typing import NoReturn
 REPO_ROOT = Path(__file__).resolve().parent.parent
 VERSION_FILE = REPO_ROOT / "pandorica" / "_version.py"
 README_FILE = REPO_ROOT / "README.md"
+CFF_FILE = REPO_ROOT / "CITATION.cff"
+# The top-level ``version:`` key of CITATION.cff (not indented, so nested reference versions are left alone).
+CFF_RE = re.compile(r"^(version:\s*)\S+\s*$", re.MULTILINE)
 
 # Matches the BibTeX-style field, e.g. ``  version = {1.5.0},``. Capturing the
 # prefix and suffix lets us swap only the value while preserving spacing.
@@ -102,22 +101,32 @@ def main() -> int:
     # template would let backslashes or ``\g<...>`` in the value be reinterpreted
     # as regex backreferences.
     updated = CITATION_RE.sub(lambda m: m.group(1) + version + m.group(2), readme)
-    if updated == readme:
-        print(f"README citation version already {version}; nothing to do.")
+    stale = {}
+    if updated != readme:
+        stale[README_FILE] = updated
+    if CFF_FILE.exists():
+        cff = CFF_FILE.read_text(encoding="utf-8")
+        if len(CFF_RE.findall(cff)) != 1:
+            fail(f"error: expected exactly one top-level `version:` key in {CFF_FILE}")
+        cff_updated = CFF_RE.sub(lambda m: m.group(1) + version, cff)
+        if cff_updated != cff:
+            stale[CFF_FILE] = cff_updated
+
+    names = ", ".join(f.name for f in stale)
+    if not stale:
+        print(f"Citation version already {version} everywhere; nothing to do.")
         return 0
 
     if args.check:
         print(
-            f"README citation version is stale (source is {version}). "
+            f"Citation version is stale in {names} (source is {version}). "
             "Run `python scripts/sync_version.py` to fix."
         )
         return 1
 
-    README_FILE.write_text(updated, encoding="utf-8")
-    print(
-        f"Updated README citation version to {version}. "
-        "Re-stage README.md and commit again."
-    )
+    for path, text in stale.items():
+        path.write_text(text, encoding="utf-8")
+    print(f"Updated the citation version to {version} in {names}. Re-stage and commit again.")
     return 1
 
 

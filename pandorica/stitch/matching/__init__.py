@@ -1,12 +1,7 @@
-#######################################################################
-#  Serial Stitcher - An Automatic tool for tomograms stitching        #
-#                                                                     #
-#  https://github.com/RRobert92                                       #
-#                                                                     #
-#  Robert Kiewisz                                                     #
-#  PolyForm Noncommercial License 1.0.0 - see LICENSE                 #
-#######################################################################
-# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+# PANDORICA — analytical tools for electron microscopy
 # Copyright (c) 2026 Robert Kiewisz
+#
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+# See LICENSE for details.
 
 """Endpoint matching: enhanced Hungarian matcher + low-level MT-endpoint geometry helpers."""

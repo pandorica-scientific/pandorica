@@ -1,13 +1,8 @@
-#######################################################################
-#  Serial Stitcher - An Automatic tool for tomograms stitching        #
-#                                                                     #
-#  https://github.com/RRobert92                                       #
-#                                                                     #
-#  Robert Kiewisz                                                     #
-#  PolyForm Noncommercial License 1.0.0 - see LICENSE                 #
-#######################################################################
-# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+# PANDORICA — analytical tools for electron microscopy
 # Copyright (c) 2026 Robert Kiewisz
+#
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+# See LICENSE for details.
 
 """
 Shared pytest fixtures for the tomogram-stitching test suite.
@@ -31,11 +26,10 @@ from pandorica.utils.pointcloud import pc_median_dist
 # --------------------------------------------------------------------------- #
 # Dataset discovery
 # --------------------------------------------------------------------------- #
-# sec09–13 dual-axis plastic-ET spatial graphs. Override with the
-# TARDIS_TEST_DATA env var; otherwise fall back to the known local path.
-# CI leaves this unset / absent → data-marked tests skip cleanly.
-_DEFAULT_DATA_DIR = "/Users/robertkiewisz/Downloads/C.elegans_FemalePN"
-DATA_DIR = os.environ.get("TARDIS_TEST_DATA", _DEFAULT_DATA_DIR)
+# sec09–13 dual-axis plastic-ET spatial graphs. Point PANDORICA_TEST_DATA at the
+# C.elegans_FemalePN folder (TARDIS_TEST_DATA is still read for old shells).
+# CI leaves both unset → data-marked tests skip cleanly.
+DATA_DIR = os.environ.get("PANDORICA_TEST_DATA") or os.environ.get("TARDIS_TEST_DATA") or ""
 
 # A fixed seed so synthetic cases and any randomized assertions are reproducible.
 SEED = 1729
@@ -77,7 +71,7 @@ def section_graphs() -> "dict[str, np.ndarray]":
     path alone, so the multi-GB volume is never read.
     """
     if not _data_available():
-        pytest.skip(f"dataset not found at {DATA_DIR} (set TARDIS_TEST_DATA)")
+        pytest.skip(f"dataset not found at {DATA_DIR or '<unset>'} (set PANDORICA_TEST_DATA)")
 
     from pandorica.io.amira import read_segmented_points
 

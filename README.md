@@ -9,6 +9,11 @@
 
 Analytical tools for electron microscopy.
 
+Status (2026-10-21): blocked on real serial-section test data; there are no numeric validation targets yet.
+The latest release is 1.5.0 on PyPI (8 Jun 2026); the last code change on `main` is 28 Jun 2026.
+Open: how to credit the Bepler group's origin of the stitching work, and 12 dependency updates
+(three of them security fixes: aiohttp, cryptography, tornado).
+
 ## Bundled tools
 
 - **`pandorica.stitch`** — serial-section tomogram stitcher: image-driven
@@ -53,7 +58,7 @@ software:
   title   = {pandorica: analytical tools for electron microscopy},
   year    = {2026},
   version = {1.5.0},
-  url     = {https://github.com/RRobert92/pandorica},
+  url     = {https://github.com/pandorica-scientific/pandorica},
   license = {PolyForm-Noncommercial-1.0.0}
 }
 ```

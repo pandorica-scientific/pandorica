@@ -81,17 +81,17 @@ correct rather than start cold.
 
 ```bash
 # Plugins menu (after registering the manifest — see below):
-conda run -n tardis napari        # Plugins → Serial Section Stitcher / Coarse GT Recorder
+uv run --extra napari napari   # Plugins → Serial Section Stitcher / Coarse GT Recorder
 
 # Headless, both widgets docked, optional folder pre-loaded:
-conda run -n tardis python -m pandorica.napari /path/to/dataset
+uv run --extra napari python -m pandorica.napari /path/to/dataset
 ```
 
 For the **Plugins menu** to find the widgets, the `napari.manifest` entry point
 must be registered — re-run an editable install once after pulling this code:
 
 ```bash
-conda run -n tardis pip install -e . --no-deps
+uv sync --extra napari
 ```
 
 ## Conventions
