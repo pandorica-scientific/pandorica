@@ -1,11 +1,8 @@
-#######################################################################
-#  Serial Stitcher - An Automatic tool for tomograms stitching        #
-#                                                                     #
-#  https://github.com/RRobert92                                       #
-#                                                                     #
-#  Robert Kiewisz                                                     #
-#  PolyForm Noncommercial License 1.0.0 - see LICENSE                 #
-#######################################################################
+# PANDORICA — analytical tools for electron microscopy
+# Copyright (c) 2026 Robert Kiewisz
+#
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+# See LICENSE for details.
 
 [build-system]
 requires = ["setuptools>=67.2.0", "wheel"]
@@ -13,7 +10,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pandorica"
-description = "Analytical tools for cryo-electron microscopy (stitching + napari validator)."
+description = "Analytical tools for electron microscopy: serial-section tomogram stitching and a napari validator."
 readme = "README.md"
 requires-python = ">=3.10,!=3.12"
 license = { file = "LICENSE" }
@@ -59,8 +56,9 @@ napari = ["napari", "qtpy"]
 pandorica = "pandorica.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/RRobert92/pandorica"
-Repository = "https://github.com/RRobert92/pandorica"
+Homepage = "https://github.com/pandorica-scientific/pandorica"
+Repository = "https://github.com/pandorica-scientific/pandorica"
+Changelog = "https://github.com/pandorica-scientific/pandorica/blob/main/CHANGELOG.md"
 
 [project.entry-points."napari.manifest"]
 pandorica = "pandorica.napari:napari.yaml"
@@ -110,3 +108,7 @@ combine_as_imports = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[tool.black]
+line-length = 100
+target-version = ["py310"]

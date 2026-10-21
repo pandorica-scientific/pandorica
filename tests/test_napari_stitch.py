@@ -1,13 +1,8 @@
-#######################################################################
-#  Serial Stitcher - An Automatic tool for tomograms stitching        #
-#                                                                     #
-#  https://github.com/RRobert92                                       #
-#                                                                     #
-#  Robert Kiewisz                                                     #
-#  PolyForm Noncommercial License 1.0.0 - see LICENSE                 #
-#######################################################################
-# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+# PANDORICA — analytical tools for electron microscopy
 # Copyright (c) 2026 Robert Kiewisz
+#
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+# See LICENSE for details.
 
 """
 Logic tests for the napari stitch-validator plugin (no Qt / no GL).
@@ -529,9 +524,7 @@ def test_export_graph_only(tmp_path):
 # --------------------------------------------------------------------------- #
 # real-data path (skipped if the example dataset is absent)
 # --------------------------------------------------------------------------- #
-_DATA = os.environ.get(
-    "TARDIS_TEST_DATA", "/Users/robertkiewisz/Downloads/C.elegans_FemalePN"
-)
+_DATA = os.environ.get("PANDORICA_TEST_DATA") or os.environ.get("TARDIS_TEST_DATA") or ""
 
 
 @pytest.mark.skipif(not os.path.isdir(_DATA), reason="example dataset not present")

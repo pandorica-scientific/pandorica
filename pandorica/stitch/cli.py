@@ -1,13 +1,8 @@
-#######################################################################
-#  Serial Stitcher - An Automatic tool for tomograms stitching        #
-#                                                                     #
-#  https://github.com/RRobert92                                       #
-#                                                                     #
-#  Robert Kiewisz                                                     #
-#  PolyForm Noncommercial License 1.0.0 - see LICENSE                 #
-#######################################################################
-# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+# PANDORICA — analytical tools for electron microscopy
 # Copyright (c) 2026 Robert Kiewisz
+#
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+# See LICENSE for details.
 
 """
 Headless, production entry point for the serial-section stitcher.
@@ -86,7 +81,7 @@ def _report_header(pandorica_version: str) -> list[str]:
         _h(" PANDORICA  —  serial-section tomogram stitcher"),
         _h(f" Version : pandorica v{pandorica_version}"),
         _h(f" Date    : {now}"),
-        _h(" Project : https://github.com/RRobert92/pandorica"),
+        _h(" Project : https://github.com/pandorica-scientific/pandorica"),
         _h(" License : PolyForm Noncommercial 1.0.0"),
         _BANNER_BORDER,
         _h(),
@@ -97,7 +92,7 @@ def _report_header(pandorica_version: str) -> list[str]:
         _h("     title   = {pandorica: analytical tools for electron microscopy},"),
         _h("     year    = {2026},"),
         _h(f"     version = {{v{pandorica_version}}},"),
-        _h("     url     = {https://github.com/RRobert92/pandorica},"),
+        _h("     url     = {https://github.com/pandorica-scientific/pandorica},"),
         _h("     license = {PolyForm-Noncommercial-1.0.0}"),
         _h("   }"),
         _h(),

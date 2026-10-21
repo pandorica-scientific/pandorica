@@ -1,0 +1,29 @@
+name: Experiment
+description: Pre-register an experiment (EXP-NNN). Title it "EXP-NNN: <short title>".
+title: "EXP-NNN: "
+labels: [experiment]
+body:
+  - type: input
+    id: exp
+    attributes: {label: Experiment id, placeholder: EXP-003}
+    validations: {required: true}
+  - type: textarea
+    id: question
+    attributes: {label: Question, description: One question this experiment answers.}
+    validations: {required: true}
+  - type: textarea
+    id: hypothesis
+    attributes: {label: Hypothesis and what would falsify it}
+  - type: input
+    id: baseline
+    attributes: {label: Baseline, placeholder: "v1.5.0 on the FemalePN stack"}
+  - type: dropdown
+    id: data
+    attributes: {label: Data, options: [simulated, real, mixed]}
+    validations: {required: true}
+  - type: textarea
+    id: budget
+    attributes: {label: Budget, description: "Wall time, peak memory, points per scene, seeds.", placeholder: "wall time, GPU memory, sections"}
+  - type: textarea
+    id: rules
+    attributes: {label: Success or replacement rules that decide it, placeholder: "QC certificate per interface; flip flags"}

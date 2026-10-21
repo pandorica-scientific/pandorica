@@ -1,0 +1,19 @@
+name: Decision
+description: A question that needs the PI's decision. The record lives in pandorica-state as D-<PROJ>-NNN.
+labels: [decision]
+body:
+  - type: input
+    id: id
+    attributes: {label: Decision id, placeholder: D-PAN-004}
+    validations: {required: true}
+  - type: textarea
+    id: question
+    attributes: {label: Question}
+    validations: {required: true}
+  - type: textarea
+    id: options
+    attributes: {label: Options, description: "One per line: A: ..., B: ..."}
+    validations: {required: true}
+  - type: input
+    id: blocking
+    attributes: {label: Blocks, placeholder: "#20"}

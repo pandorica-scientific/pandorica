@@ -5,6 +5,18 @@ All notable changes to pandorica are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project adheres to [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Changed
+
+- Project standard v1 (Pandorica Scientific): every file header names PANDORICA and the SPDX licence; all URLs point
+  to `github.com/pandorica-scientific/pandorica` (README citation, pyproject, LICENSE notice, CLI banner);
+  `CITATION.cff` added and kept in step with `_version.py` by `scripts/sync_version.py`; this file renamed from
+  `HISTORY.md`.
+- Tests read the private dataset path from `PANDORICA_TEST_DATA` (`TARDIS_TEST_DATA` still works); the personal
+  default path was removed, so data tests skip unless the variable is set.
+- CI runs the test suite on every push and pull request; Dependabot groups minor and patch updates monthly.
+
 ## [1.5.0] — 2026-06-09
 
 Cleanup, performance, documentation, and CLI-logging pass on top of the 1.4.0 alignment

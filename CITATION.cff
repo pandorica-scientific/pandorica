@@ -1,0 +1,16 @@
+cff-version: 1.2.0
+message: "If pandorica contributes to a publication or presentation, please cite it as below."
+title: "pandorica: analytical tools for electron microscopy"
+abstract: "Serial-section tomogram stitching (image-driven coarse-to-fine pose, microtubule-driven guarded thin-plate-spline warp) delivered as a CLI and a napari plugin."
+type: software
+authors:
+  - family-names: Kiewisz
+    given-names: Robert
+    affiliation: Pandorica Scientific
+version: 1.5.0
+date-released: "2026-06-08"
+license: LicenseRef-PolyForm-Noncommercial-1.0.0
+license-url: "https://polyformproject.org/licenses/noncommercial/1.0.0"
+repository-code: "https://github.com/pandorica-scientific/pandorica"
+url: "https://pypi.org/project/pandorica/"
+keywords: [electron tomography, serial sections, stitching, microtubules, napari]
