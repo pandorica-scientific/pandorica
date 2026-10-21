@@ -4247,7 +4247,7 @@ requires-dist = [
     { name = "scikit-learn", specifier = ">1.0.1" },
     { name = "scipy", specifier = ">=1.10.0" },
     { name = "tifffile" },
-    { name = "torch", specifier = ">2.0.0" },
+    { name = "torch", specifier = ">=2.14.1" },
 ]
 provides-extras = ["napari"]
 

@@ -30,7 +30,7 @@ classifiers = [
 dynamic = ["version"]
 dependencies = [
     # ML library
-    "torch>2.0.0",
+    "torch>=2.14.1",
     "numpy>=2.0.0",
     "pandas>=2.2.0",
     # Image loading/export
