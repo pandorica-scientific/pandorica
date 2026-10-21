@@ -73,7 +73,7 @@ dev = [
     # Build package
     "setuptools>67.2.0",
     "build>=1.2.0",
-    "twine>=5.0.0",
+    "twine>=7.0.0",
     # Plots
     "matplotlib>3.5.2",
     # Jupyter
