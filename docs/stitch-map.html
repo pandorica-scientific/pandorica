@@ -1,0 +1,1224 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pandorica Stitch Map</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=Schibsted+Grotesk:wght@600;700;800&display=swap">
+<style>
+/* One reading column; the pipeline diagram breaks out to a wider panel. The diagrams are
+   hand-drawn inline SVG coloured from the tokens below, so they follow the light and dark themes.
+   Block colours: cyan = image-driven steps, green = microtubule-driven steps, violet = the guarded
+   warp, amber = checks and flags, grey = fixed operations (nothing estimated). */
+:root {
+  --bg: #eef2f4;
+  --panel: #ffffff;
+  --ink: #14202b;
+  --muted: #56687a;
+  --line: #c9d4db;
+  --soft: #e3eaee;
+  --c1: #0b7f99;
+  --c2: #b4326a;
+  --c3: #b06f0a;
+  --good: #1d8656;
+  --pt-fill: #dff0f5; --pt-line: #0b7f99;
+  --co-fill: #e0f1e7; --co-line: #2a8059;
+  --pr-fill: #ece6f5; --pr-line: #6a4fa3;
+  --hd-fill: #f8ecd8; --hd-line: #b06f0a;
+  --io-fill: #eef2f4; --io-line: #8a9aa8;
+  --band: #f3f7f9;
+  --display: "Schibsted Grotesk", "Helvetica Neue", Arial, sans-serif;
+  --body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1418; --panel: #151d23; --ink: #e2e9ee; --muted: #93a4b1; --line: #2c3943;
+    --soft: #1c262d; --c1: #3fbfd9; --c2: #e56b9d; --c3: #e8a945; --good: #4cc08a;
+    --pt-fill: #11313b; --pt-line: #3fbfd9;
+    --co-fill: #12342a; --co-line: #4cc08a;
+    --pr-fill: #261f3a; --pr-line: #a68ce0;
+    --hd-fill: #36290f; --hd-line: #e8a945;
+    --io-fill: #1c262d; --io-line: #5f7282;
+    --band: #19222a;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e1418; --panel: #151d23; --ink: #e2e9ee; --muted: #93a4b1; --line: #2c3943;
+  --soft: #1c262d; --c1: #3fbfd9; --c2: #e56b9d; --c3: #e8a945; --good: #4cc08a;
+  --pt-fill: #11313b; --pt-line: #3fbfd9;
+  --co-fill: #12342a; --co-line: #4cc08a;
+  --pr-fill: #261f3a; --pr-line: #a68ce0;
+  --hd-fill: #36290f; --hd-line: #e8a945;
+  --io-fill: #1c262d; --io-line: #5f7282;
+  --band: #19222a;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--body);
+  font-size: 16px;
+  line-height: 1.6;
+  margin: 0;
+  padding-inline: 20px;
+  padding-block: 0 64px;
+}
+.wrap { max-width: 1040px; margin: 0 auto; display: grid; gap: 56px; }
+h1, h2, h3 { font-family: var(--display); line-height: 1.15; text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(2.2rem, 5vw, 3.4rem); font-weight: 800; letter-spacing: -0.02em; }
+h2 { font-size: clamp(1.5rem, 3vw, 2rem); font-weight: 700; letter-spacing: -0.01em; }
+h3 { font-size: 1.05rem; font-weight: 700; }
+p { margin: 0; max-width: 68ch; }
+a { color: var(--c1); text-underline-offset: 2px; overflow-wrap: anywhere; }
+a:focus-visible { outline: 2px solid var(--c1); outline-offset: 2px; border-radius: 2px; }
+code, .mono { font-family: var(--mono); font-size: 0.88em; }
+.eyebrow {
+  font-family: var(--mono); font-size: 0.78rem; text-transform: uppercase;
+  letter-spacing: 0.12em; color: var(--muted);
+}
+.muted { color: var(--muted); }
+.small { font-size: 0.88rem; }
+
+header { padding-block: 48px 0; display: grid; gap: 18px; }
+.lede { font-size: 1.15rem; color: var(--muted); max-width: 62ch; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; list-style: none; padding: 0; margin: 0; }
+.chips li {
+  font-family: var(--mono); font-size: 0.8rem; padding: 4px 10px;
+  border: 1px solid var(--line); border-radius: 999px; color: var(--ink); background: var(--panel);
+}
+nav.toc ol { margin: 0; padding-left: 1.3em; columns: 2 260px; column-gap: 32px; }
+nav.toc li { margin-bottom: 4px; }
+
+section { display: grid; grid-template-columns: minmax(0, 1fr); gap: 18px; min-width: 0; }
+.head { display: grid; gap: 8px; }
+.panel {
+  background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+  padding: 20px; display: grid; gap: 16px; min-width: 0; align-content: start;
+}
+.cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+.cols > * { min-width: 0; display: grid; gap: 8px; align-content: start; }
+ul.facts { margin: 0; padding-left: 1.1em; display: grid; gap: 6px; max-width: 80ch; }
+ul.facts li::marker { color: var(--c1); }
+ol.steps { margin: 0; padding-left: 1.5em; display: grid; gap: 10px; max-width: 80ch; }
+ol.steps li::marker { color: var(--c1); font-family: var(--mono); }
+.note {
+  border-left: 3px solid var(--c3); padding: 8px 14px; background: var(--soft);
+  border-radius: 0 6px 6px 0; font-size: 0.94rem; max-width: 80ch;
+}
+pre.cmd {
+  font-family: var(--mono); font-size: 0.86rem; background: var(--soft); border-radius: 6px;
+  padding: 10px 12px; overflow-x: auto; margin: 0; line-height: 1.7;
+}
+
+/* The wide diagram panel: centred on the column, at most 1320px, never wider than the screen */
+.bleed {
+  width: min(1320px, calc(100vw - 40px));
+  margin-left: 50%;
+  transform: translateX(-50%);
+}
+.diagram { overflow-x: auto; }
+.diagram svg { display: block; width: 100%; min-width: 1000px; height: auto; }
+
+/* Diagram drawing, all colours from the tokens */
+.band { fill: var(--band); }
+.b-pt { fill: var(--pt-fill); stroke: var(--pt-line); stroke-width: 1.4; }
+.b-co { fill: var(--co-fill); stroke: var(--co-line); stroke-width: 1.4; }
+.b-pr { fill: var(--pr-fill); stroke: var(--pr-line); stroke-width: 1.4; }
+.b-hd { fill: var(--hd-fill); stroke: var(--hd-line); stroke-width: 1.4; }
+.b-io { fill: var(--io-fill); stroke: var(--io-line); stroke-width: 1.4; }
+.dashed { stroke-dasharray: 5 4; }
+.a { stroke: var(--ink); stroke-width: 1.5; fill: none; }
+.a-skip { stroke: var(--muted); stroke-width: 1.4; fill: none; }
+.a-co { stroke: var(--co-line); stroke-width: 1.5; fill: none; }
+.a-pr { stroke: var(--pr-line); stroke-width: 1.5; fill: none; }
+.a-hd { stroke: var(--hd-line); stroke-width: 1.4; fill: none; }
+.mk-ink { fill: var(--ink); }
+.mk-mute { fill: var(--muted); }
+.mk-hd { fill: var(--hd-line); }
+.mk-pr { fill: var(--pr-line); }
+.mk-co { fill: var(--co-line); }
+.d-title { font: 600 13px var(--body); fill: var(--ink); }
+.d-title-s { font: 600 12px var(--body); fill: var(--ink); }
+.d-sub { font: 400 11px var(--body); fill: var(--muted); }
+.d-num { font: 500 11px var(--mono); fill: var(--muted); }
+.d-label { font: 500 11px var(--mono); fill: var(--muted); letter-spacing: 0.08em; }
+.d-note { font: italic 400 11px var(--body); fill: var(--muted); }
+.d-rail { font: 500 11px var(--body); fill: var(--pr-line); }
+.d-pt { font: italic 400 10px var(--body); fill: var(--muted); }
+.badge circle { fill: var(--panel); stroke: var(--ink); stroke-width: 1.2; }
+.badge text { font: 600 10px var(--mono); fill: var(--ink); }
+
+/* Main diagram blocks that open their drawing below */
+.blk { cursor: pointer; }
+.blk:hover rect, .blk:focus-visible rect { stroke-width: 2.6; }
+.blk:focus { outline: none; }
+[id] { scroll-margin-top: 16px; }
+
+/* Drawings inside the blocks: pills = data, tinted boxes = estimated, grey = fixed, amber = check */
+.diagram.inner svg { min-width: 860px; }
+.op-pt { fill: var(--pt-fill); stroke: var(--pt-line); stroke-width: 1.2; }
+.op-co { fill: var(--co-fill); stroke: var(--co-line); stroke-width: 1.2; }
+.op-pr { fill: var(--pr-fill); stroke: var(--pr-line); stroke-width: 1.2; }
+.op-hd { fill: var(--hd-fill); stroke: var(--hd-line); stroke-width: 1.2; }
+.op-fx { fill: var(--io-fill); stroke: var(--io-line); stroke-width: 1.2; }
+.pill { fill: var(--panel); stroke: var(--ink); stroke-width: 1.2; }
+.pill-hd { fill: var(--panel); stroke: var(--hd-line); stroke-width: 1.4; }
+.dotted { stroke-dasharray: 2 3; }
+.a-s { stroke: var(--ink); stroke-width: 1.2; fill: none; }
+.jdot { fill: var(--ink); }
+.op-t { font: 400 11px var(--body); fill: var(--ink); }
+.op-t.b { font-weight: 600; }
+.op-s { font: 400 10.5px var(--body); fill: var(--muted); }
+.sec { font: 500 10.5px var(--mono); fill: var(--muted); letter-spacing: 0.08em; }
+.sep { stroke: var(--soft); stroke-width: 1; }
+.axis { stroke: var(--muted); stroke-width: 1; }
+.curve { stroke: var(--pt-line); stroke-width: 1.8; fill: none; }
+.gl { stroke: var(--muted); stroke-width: 1.1; fill: none; }
+.gl-bad { stroke: var(--hd-line); stroke-width: 1.8; fill: none; }
+.gl-ok { stroke: var(--pr-line); stroke-width: 1.1; fill: none; }
+.slab { fill: var(--io-fill); stroke: var(--io-line); stroke-width: 1.2; }
+.wv { stroke: var(--pr-line); stroke-width: 2; fill: none; }
+.sw.pill-sw { background: var(--panel); border-color: var(--ink); border-radius: 999px; }
+.sym { font-family: var(--mono); color: var(--ink); }
+
+/* Legend under the diagram */
+.legend {
+  display: flex; flex-wrap: wrap; gap: 8px 22px; list-style: none; padding: 0; margin: 0;
+  font-size: 0.86rem; color: var(--muted);
+}
+.legend li { display: flex; align-items: center; gap: 8px; }
+.sw { width: 20px; height: 13px; border-radius: 3px; border: 1.5px solid; flex: none; }
+.sw.pt { background: var(--pt-fill); border-color: var(--pt-line); }
+.sw.co { background: var(--co-fill); border-color: var(--co-line); }
+.sw.pr { background: var(--pr-fill); border-color: var(--pr-line); }
+.sw.hd { background: var(--hd-fill); border-color: var(--hd-line); }
+.sw.io { background: var(--io-fill); border-color: var(--io-line); }
+.sw.opt { background: transparent; border-color: var(--io-line); border-style: dashed; }
+.legend svg { width: 16px; height: 16px; flex: none; }
+
+/* Formulas */
+.formula {
+  font-family: var(--mono); font-size: 0.88rem; background: var(--soft); border-radius: 6px;
+  padding: 10px 12px; overflow-x: auto; white-space: pre; line-height: 1.7; margin: 0;
+}
+
+figure { margin: 0; display: grid; gap: 12px; min-width: 0; }
+figcaption { font-size: 0.88rem; color: var(--muted); max-width: 90ch; }
+
+/* Why we think it works: one row per claim, the evidence and its standing beside it */
+.why { display: grid; gap: 0; }
+.why-row {
+  display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 24px;
+  padding-block: 18px; border-top: 1px solid var(--soft);
+}
+.why-row:first-child { border-top: 0; padding-top: 4px; }
+.why-row > div { display: grid; gap: 8px; align-content: start; min-width: 0; }
+.why-row .ev { font-size: 0.92rem; color: var(--muted); }
+@media (max-width: 720px) { .why-row { grid-template-columns: minmax(0, 1fr); gap: 10px; } }
+.status {
+  justify-self: start; font-family: var(--mono); font-size: 0.72rem; text-transform: uppercase;
+  letter-spacing: 0.1em; padding: 2px 9px; border-radius: 999px; border: 1px solid currentColor;
+}
+.status.ok { color: var(--good); }
+.status.hint { color: var(--c3); }
+.status.open { color: var(--muted); }
+.status.run { color: var(--c1); }
+
+/* Tables */
+.tablewrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 0.92rem; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--soft); vertical-align: top; }
+th { font-family: var(--mono); font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 500; }
+td.v { font-family: var(--mono); white-space: nowrap; color: var(--c1); font-variant-numeric: tabular-nums; }
+td code { white-space: nowrap; }
+tr.group th {
+  font-family: var(--display); font-size: 0.95rem; text-transform: none; letter-spacing: 0;
+  color: var(--ink); font-weight: 700; padding-top: 20px; border-bottom: 1px solid var(--line);
+}
+
+/* Where it stands */
+.stand { display: grid; gap: 14px; }
+.stand-row { display: grid; grid-template-columns: 7.5rem minmax(0, 1fr); gap: 14px; align-items: start; }
+.stand-row .status { margin-top: 3px; }
+@media (max-width: 560px) { .stand-row { grid-template-columns: minmax(0, 1fr); gap: 6px; } }
+.nums { font-family: var(--mono); font-size: 0.86rem; font-variant-numeric: tabular-nums; }
+
+footer { color: var(--muted); font-size: 0.88rem; display: grid; gap: 6px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <span class="eyebrow">Pandorica Scientific · pandorica · the stitcher</span>
+    <h1>Pandorica stitch map</h1>
+    <p class="lede">The stitcher joins a stack of serial-section electron tomograms into one volume and one microtubule network. The images of each cut set every section's pose: rotation, shift and the knife's x/y stretch. The microtubule ends that cross each cut then bend the rest into place, with a warp that may neither fold nor swirl. Joints it cannot vouch for are flagged.</p>
+    <ul class="chips" aria-label="Design rules">
+      <li>microtubule lengths in ρ (end spacing)</li><li>warps checked: det J ≥ 0.05, |curl| ≤ 0.3</li><li>no landmarks by hand</li><li>CPU, CUDA or Apple MPS</li><li>Amira files in, Amira files out</li>
+    </ul>
+    <p class="small muted">Snapshot of 2026-10-15: the stitcher as it is in the code (commit <code>bc7b222</code>, pandorica 1.5.0; the stitcher code last changed in <code>b143e42</code> on 2026-06-19). Settings come from <code>run_stitch</code> (<code>pandorica/stitch/cli.py</code>) and the functions it calls; results come from <a href="../HISTORY.md"><code>HISTORY.md</code></a>, the code's own notes and the stitcher review of 2026-09-23 and 24. Plain-language tour: <a href="../pandorica/stitch/HOW_IT_WORKS.md"><code>HOW_IT_WORKS.md</code></a>; reference: <a href="../pandorica/stitch/README.md"><code>pandorica/stitch/README.md</code></a>.</p>
+    <nav class="toc panel" aria-label="Contents">
+      <ol>
+        <li><a href="#pipeline">The pipeline</a></li>
+        <li><a href="#why">Why we think it works</a></li>
+        <li><a href="#blocks">Inside the blocks</a></li>
+        <li><a href="#modes">Three ways to run</a></li>
+        <li><a href="#stands">Where it stands</a></li>
+        <li><a href="#settings">Default settings</a></li>
+      </ol>
+    </nav>
+  </header>
+
+  <!-- 1 -->
+  <section id="pipeline" aria-labelledby="pipe-title">
+    <div class="head">
+      <span class="eyebrow">1 · Pipeline</span>
+      <h2 id="pipe-title">The pipeline</h2>
+      <p class="muted">Code: <code>run_stitch</code> in <code>pandorica/stitch/cli.py</code>, then <code>stitch_sections</code> in <code>pandorica/stitch/pipeline/stitcher.py</code>. The default path, when every section has a volume and a microtubule graph. Read the top lane (the image) and the lane below it (the microtubules) left to right; numbers give the order in which the steps run.</p>
+    </div>
+
+    <div class="panel bleed">
+      <figure>
+        <div class="diagram">
+<svg viewBox="0 18 1440 522" role="img" aria-label="The stitcher's default path in two lanes. Image lane: section volumes, boundary faces, then the image coarse pose, which sets rotation, shift and x/y stretch for every section; the poses go on to the image fill and the export. Microtubule lane: graphs, boundary ends, the same pose applied to the ends, matching, the guarded warp and the QC certificate. After the first pass, an MT rescue and scale gate correct poses where the microtubules do not match. The MT warp feeds the image fill. The export applies poses and warps to the volume and the graph and writes the stitched volume, the run log, the merged graph and an optional inspect bundle.">
+  <defs>
+    <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="userSpaceOnUse" markerWidth="9" markerHeight="9" orient="auto"><path class="mk-ink" d="M0,0 L10,5 L0,10 z"/></marker>
+    <marker id="ah-mute" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="userSpaceOnUse" markerWidth="9" markerHeight="9" orient="auto"><path class="mk-mute" d="M0,0 L10,5 L0,10 z"/></marker>
+    <marker id="ah-co" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="userSpaceOnUse" markerWidth="9" markerHeight="9" orient="auto"><path class="mk-co" d="M0,0 L10,5 L0,10 z"/></marker>
+    <marker id="ah-pr" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="userSpaceOnUse" markerWidth="9" markerHeight="9" orient="auto"><path class="mk-pr" d="M0,0 L10,5 L0,10 z"/></marker>
+    <!-- smaller arrowheads, used by the drawings inside the blocks too -->
+    <marker id="ahs" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="userSpaceOnUse" markerWidth="7" markerHeight="7" orient="auto"><path class="mk-ink" d="M0,0 L10,5 L0,10 z"/></marker>
+    <marker id="ahs-hd" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="userSpaceOnUse" markerWidth="7" markerHeight="7" orient="auto"><path class="mk-hd" d="M0,0 L10,5 L0,10 z"/></marker>
+    <marker id="ahs-pr" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="userSpaceOnUse" markerWidth="7" markerHeight="7" orient="auto"><path class="mk-pr" d="M0,0 L10,5 L0,10 z"/></marker>
+  </defs>
+
+  <text class="d-note" x="552" y="40" text-anchor="middle">per interface k → k+1: the top face of section k meets the bottom face of section k+1 (Z points up)</text>
+
+  <!-- Lanes -->
+  <rect class="band" x="12" y="64" width="1080" height="180" rx="10"/>
+  <rect class="band" x="12" y="256" width="1080" height="180" rx="10"/>
+  <text class="d-label" x="28" y="86">IMAGE · SECTION VOLUMES</text>
+  <text class="d-label" x="28" y="278">MICROTUBULES · SPATIAL GRAPHS</text>
+  <text class="d-label" x="1268" y="86" text-anchor="middle">WHOLE STACK</text>
+  <text class="d-label" x="28" y="480">AFTER THE</text>
+  <text class="d-label" x="28" y="496">FIRST PASS</text>
+
+  <!-- Image lane -->
+  <rect class="b-io" x="24" y="100" width="130" height="110" rx="6"/>
+  <text class="d-title" x="89" y="126" text-anchor="middle">Section volumes</text>
+  <text class="d-sub" x="89" y="150" text-anchor="middle">one .am image</text>
+  <text class="d-sub" x="89" y="166" text-anchor="middle">per section,</text>
+  <text class="d-sub" x="89" y="182" text-anchor="middle">read when needed</text>
+  <line class="a" x1="154" y1="155" x2="196" y2="155" marker-end="url(#ah)"/>
+
+  <rect class="b-io" x="196" y="100" width="140" height="110" rx="6"/>
+  <text class="d-title" x="266" y="126" text-anchor="middle">Boundary faces</text>
+  <text class="d-sub" x="266" y="150" text-anchor="middle">maximum over the</text>
+  <text class="d-sub" x="266" y="166" text-anchor="middle">outer 10 slices,</text>
+  <text class="d-sub" x="266" y="182" text-anchor="middle">at half resolution</text>
+  <line class="a" x1="336" y1="155" x2="378" y2="155" marker-end="url(#ah)"/>
+
+  <a class="blk" href="#inside-coarse" aria-label="Image coarse pose: see inside">
+  <rect class="b-pt" x="378" y="100" width="140" height="110" rx="6"/>
+  <text class="d-title" x="448" y="124" text-anchor="middle">Image coarse</text>
+  <text class="d-title" x="448" y="140" text-anchor="middle">pose</text>
+  <text class="d-sub" x="448" y="162" text-anchor="middle">rotation, shift,</text>
+  <text class="d-sub" x="448" y="178" text-anchor="middle">x/y stretch</text>
+  <text class="d-sub" x="448" y="194" text-anchor="middle">weighted RANSAC</text>
+  </a>
+
+  <line class="a" x1="518" y1="155" x2="924" y2="155" marker-end="url(#ah)"/>
+  <text class="d-note" x="721" y="147" text-anchor="middle">absolute poses, one per section (section 0 fixed)</text>
+
+  <a class="blk" href="#inside-fill" aria-label="Image fill: see inside">
+  <rect class="b-pt" x="924" y="100" width="140" height="110" rx="6"/>
+  <text class="d-title" x="994" y="126" text-anchor="middle">Image fill</text>
+  <text class="d-sub" x="994" y="150" text-anchor="middle">regions without MTs</text>
+  <text class="d-sub" x="994" y="166" text-anchor="middle">block match at</text>
+  <text class="d-sub" x="994" y="182" text-anchor="middle">quarter resolution</text>
+  <text class="d-sub" x="994" y="198" text-anchor="middle">MT ends pinned</text>
+  </a>
+  <line class="a" x1="1064" y1="155" x2="1106" y2="155" marker-end="url(#ah)"/>
+
+  <!-- The same pose moves the microtubule ends -->
+  <line class="a" x1="448" y1="210" x2="448" y2="333" marker-end="url(#ah)"/>
+  <text class="d-note" x="456" y="304">same pose</text>
+
+  <!-- Microtubule lane -->
+  <rect class="b-io" x="24" y="292" width="130" height="110" rx="6"/>
+  <text class="d-title" x="89" y="316" text-anchor="middle">Microtubule</text>
+  <text class="d-title" x="89" y="332" text-anchor="middle">graphs</text>
+  <text class="d-sub" x="89" y="356" text-anchor="middle">*_spatialGraph.am</text>
+  <text class="d-sub" x="89" y="372" text-anchor="middle">rows id, x, y, z</text>
+  <text class="d-sub" x="89" y="388" text-anchor="middle">in Å</text>
+  <line class="a" x1="154" y1="347" x2="196" y2="347" marker-end="url(#ah)"/>
+
+  <rect class="b-io" x="196" y="292" width="140" height="110" rx="6"/>
+  <text class="d-title" x="266" y="318" text-anchor="middle">Boundary ends</text>
+  <text class="d-sub" x="266" y="342" text-anchor="middle">MT ends in the outer</text>
+  <text class="d-sub" x="266" y="358" text-anchor="middle">15% of Z, with a</text>
+  <text class="d-sub" x="266" y="374" text-anchor="middle">direction each</text>
+  <text class="d-sub" x="266" y="390" text-anchor="middle">ρ: median spacing</text>
+  <line class="a" x1="336" y1="347" x2="408" y2="347" marker-end="url(#ah)"/>
+
+  <rect class="b-io" x="408" y="333" width="80" height="28" rx="6"/>
+  <text class="d-title-s" x="448" y="351" text-anchor="middle">apply pose</text>
+  <line class="a" x1="488" y1="347" x2="560" y2="347" marker-end="url(#ah)"/>
+
+  <a class="blk" href="#inside-match" aria-label="Match ends: see inside">
+  <rect class="b-co" x="560" y="292" width="140" height="110" rx="6"/>
+  <text class="d-title" x="630" y="318" text-anchor="middle">Match ends</text>
+  <text class="d-sub" x="630" y="342" text-anchor="middle">Hungarian + gates</text>
+  <text class="d-sub" x="630" y="358" text-anchor="middle">in ρ units</text>
+  <text class="d-sub" x="630" y="374" text-anchor="middle">bootstrap: up to</text>
+  <text class="d-sub" x="630" y="390" text-anchor="middle">6 passes</text>
+  </a>
+  <line class="a" x1="700" y1="347" x2="742" y2="347" marker-end="url(#ah)"/>
+
+  <a class="blk" href="#inside-warp" aria-label="Guarded warp: see inside">
+  <rect class="b-pr" x="742" y="292" width="140" height="110" rx="6"/>
+  <text class="d-title" x="812" y="318" text-anchor="middle">Guarded warp</text>
+  <text class="d-sub" x="812" y="342" text-anchor="middle">thin-plate spline</text>
+  <text class="d-sub" x="812" y="358" text-anchor="middle">det J ≥ 0.05</text>
+  <text class="d-sub" x="812" y="374" text-anchor="middle">|curl| ≤ 0.3</text>
+  <text class="d-sub" x="812" y="390" text-anchor="middle">else smooth or reject</text>
+  </a>
+  <line class="a" x1="882" y1="347" x2="924" y2="347" marker-end="url(#ah)"/>
+
+  <a class="blk" href="#inside-qc" aria-label="QC certificate: see inside">
+  <rect class="b-hd" x="924" y="292" width="140" height="110" rx="6"/>
+  <text class="d-title" x="994" y="318" text-anchor="middle">QC certificate</text>
+  <text class="d-sub" x="994" y="342" text-anchor="middle">accepted or flagged,</text>
+  <text class="d-sub" x="994" y="358" text-anchor="middle">with reasons;</text>
+  <text class="d-sub" x="994" y="374" text-anchor="middle">chainable: judged</text>
+  <text class="d-sub" x="994" y="390" text-anchor="middle">on matches alone</text>
+  </a>
+  <line class="a" x1="1064" y1="347" x2="1106" y2="347" marker-end="url(#ah)"/>
+
+  <!-- The MT warp pre-aligns the image fill -->
+  <path class="a-pr" d="M812,292 V272 H970 V212" marker-end="url(#ah-pr)"/>
+  <text class="d-rail" x="891" y="266" text-anchor="middle">MT warp</text>
+
+  <!-- Rescue loop -->
+  <path class="a-co" d="M994,402 V488 H880" marker-end="url(#ah-co)"/>
+  <text class="d-note" x="1002" y="448">first-pass</text>
+  <text class="d-note" x="1002" y="462">match fractions</text>
+  <a class="blk" href="#inside-rescue" aria-label="MT rescue and scale gate: see inside">
+  <rect class="b-co" x="560" y="456" width="320" height="64" rx="6"/>
+  <text class="d-title" x="720" y="478" text-anchor="middle">MT rescue and scale gate</text>
+  <text class="d-sub" x="720" y="496" text-anchor="middle">match &lt; 30%: rotation re-estimated from the MTs</text>
+  <text class="d-sub" x="720" y="512" text-anchor="middle">stretch the MTs reject: dropped · re-warp those only</text>
+  </a>
+  <path class="a-co" d="M560,488 H448 V361" marker-end="url(#ah-co)"/>
+  <text class="d-note" x="456" y="478">corrected poses</text>
+
+  <!-- Export, whole stack -->
+  <a class="blk" href="#inside-export" aria-label="Export: see inside">
+  <rect class="b-io" x="1106" y="100" width="144" height="302" rx="6"/>
+  <text class="d-title" x="1178" y="124" text-anchor="middle">Export</text>
+  <text class="d-sub" x="1178" y="146" text-anchor="middle">one canvas,</text>
+  <text class="d-sub" x="1178" y="162" text-anchor="middle">section 0 fixed</text>
+  <line class="sep" x1="1116" y1="176" x2="1240" y2="176"/>
+  <text class="d-num" x="1178" y="196" text-anchor="middle">volume</text>
+  <text class="d-sub" x="1178" y="214" text-anchor="middle">pose, then ½ warp</text>
+  <text class="d-sub" x="1178" y="230" text-anchor="middle">on each face,</text>
+  <text class="d-sub" x="1178" y="246" text-anchor="middle">blended through Z</text>
+  <text class="d-sub" x="1178" y="262" text-anchor="middle">8 px warp grid</text>
+  <text class="d-sub" x="1178" y="278" text-anchor="middle">GPU or CPU,</text>
+  <text class="d-sub" x="1178" y="294" text-anchor="middle">streamed to disk</text>
+  <line class="sep" x1="1116" y1="308" x2="1240" y2="308"/>
+  <text class="d-num" x="1178" y="328" text-anchor="middle">graph</text>
+  <text class="d-sub" x="1178" y="346" text-anchor="middle">same pose and warp;</text>
+  <text class="d-sub" x="1178" y="362" text-anchor="middle">MTs chained across</text>
+  <text class="d-sub" x="1178" y="378" text-anchor="middle">chainable joints,</text>
+  <text class="d-sub" x="1178" y="394" text-anchor="middle">split at &gt; 45°</text>
+  </a>
+
+  <!-- Outputs -->
+  <line class="a" x1="1250" y1="132" x2="1282" y2="132" marker-end="url(#ah)"/>
+  <rect class="b-io" x="1282" y="110" width="148" height="44" rx="6"/>
+  <text class="d-title-s" x="1356" y="128" text-anchor="middle">Stitched volume</text>
+  <text class="op-s" x="1356" y="145" text-anchor="middle">stitched_volume.am</text>
+  <line class="a" x1="1250" y1="222" x2="1282" y2="222" marker-end="url(#ah)"/>
+  <rect class="b-io" x="1282" y="200" width="148" height="44" rx="6"/>
+  <text class="d-title-s" x="1356" y="218" text-anchor="middle">Run log</text>
+  <text class="op-s" x="1356" y="235" text-anchor="middle">stitch_log.txt</text>
+  <line class="a" x1="1250" y1="312" x2="1282" y2="312" marker-end="url(#ah)"/>
+  <rect class="b-io" x="1282" y="290" width="148" height="44" rx="6"/>
+  <text class="d-title-s" x="1356" y="308" text-anchor="middle">Merged graph</text>
+  <text class="op-s" x="1356" y="325" text-anchor="middle">stitched_spatialGraph.am</text>
+  <line class="a-skip" x1="1250" y1="382" x2="1282" y2="382" marker-end="url(#ah-mute)"/>
+  <rect class="b-io dashed" x="1282" y="360" width="148" height="44" rx="6"/>
+  <text class="d-title-s" x="1356" y="378" text-anchor="middle">Inspect bundle</text>
+  <text class="op-s" x="1356" y="395" text-anchor="middle">stitch_inspect.npz</text>
+
+  <!-- Run order -->
+  <g class="badge"><circle cx="24" cy="100" r="9"/><text x="24" y="103.5" text-anchor="middle">1</text></g>
+  <g class="badge"><circle cx="24" cy="292" r="9"/><text x="24" y="295.5" text-anchor="middle">1</text></g>
+  <g class="badge"><circle cx="196" cy="100" r="9"/><text x="196" y="103.5" text-anchor="middle">2</text></g>
+  <g class="badge"><circle cx="196" cy="292" r="9"/><text x="196" y="295.5" text-anchor="middle">2</text></g>
+  <g class="badge"><circle cx="378" cy="100" r="9"/><text x="378" y="103.5" text-anchor="middle">3</text></g>
+  <g class="badge"><circle cx="560" cy="292" r="9"/><text x="560" y="295.5" text-anchor="middle">4</text></g>
+  <g class="badge"><circle cx="742" cy="292" r="9"/><text x="742" y="295.5" text-anchor="middle">5</text></g>
+  <g class="badge"><circle cx="924" cy="292" r="9"/><text x="924" y="295.5" text-anchor="middle">6</text></g>
+  <g class="badge"><circle cx="560" cy="456" r="9"/><text x="560" y="459.5" text-anchor="middle">7</text></g>
+  <g class="badge"><circle cx="924" cy="100" r="9"/><text x="924" y="103.5" text-anchor="middle">8</text></g>
+  <g class="badge"><circle cx="1106" cy="100" r="9"/><text x="1106" y="103.5" text-anchor="middle">9</text></g>
+</svg>
+        </div>
+        <ul class="legend" aria-label="Legend">
+          <li><span class="sw pt"></span>Step driven by the image</li>
+          <li><span class="sw co"></span>Step driven by the microtubules</li>
+          <li><span class="sw pr"></span>Warp with the fold and swirl guard</li>
+          <li><span class="sw hd"></span>Check: accept, chain or flag</li>
+          <li><span class="sw io"></span>Fixed operation, nothing estimated</li>
+          <li><span class="sw opt"></span><span>Optional output (<code>--save-inspect</code>)</span></li>
+          <li><svg viewBox="0 0 16 16" aria-hidden="true"><g class="badge"><circle cx="8" cy="8" r="7"/><text x="8" y="11.5" text-anchor="middle">1</text></g></svg>Order in which the steps run</li>
+        </ul>
+        <figcaption>How one stack moves through the stitcher by default. The image lane sets each section's whole pose; the same pose moves the microtubule ends, which then only shape a fine warp on top of it. After the first pass over all interfaces, the green box at the bottom revisits two kinds of interface: those whose microtubules match under 30% get a rotation from the microtubules instead, and those whose image stretch the microtubules reject lose it; only these are matched and warped again. The image fill then aligns the regions without microtubules, and the export applies poses and warps to both the volume and the graph. Click a coloured block, or the export, to see inside it.</figcaption>
+      </figure>
+    </div>
+
+    <div class="panel">
+      <h3>How data moves through it</h3>
+      <ol class="steps">
+        <li><b>Load.</b> The folder holds one image (<code>&lt;name&gt;_secNN.am</code>) and one graph (<code>&lt;name&gt;_secNN_spatialGraph.am</code>) per section, paired by name. The graphs load at once; each volume is read when a step needs it and dropped after. When every section has both, the path drawn above runs; <a href="#modes">section 4</a> covers the other cases.</li>
+        <li><b>Read the faces.</b> For the image: the maximum over the 10 outermost slices of each face, read at half resolution in all three axes (5 slices). For the microtubules: every microtubule whose end lies in the outer 15% of the section's Z range, with a direction from its last 20% of points (at least 3). ρ is the median nearest-neighbour distance between the ends on section k's top face; the microtubule thresholds are multiples of it.</li>
+        <li><b>Image coarse pose.</b> For each interface, the rotation that most image cells agree on, the shift, and, when it exceeds 2%, an x/y stretch. The relative poses compose into one absolute pose per section, with section 0 fixed. Interfaces the image cannot settle are marked for review in the log.</li>
+        <li><b>Match the ends.</b> The same relative pose moves section k+1's bottom ends onto section k's top ends; the matcher pairs them one to one, and a bootstrap recovers pairs that one pass misses.</li>
+        <li><b>Guarded warp.</b> A thin-plate spline through the pairs bends section k+1's face onto section k's. It is kept only if it neither folds nor swirls; otherwise it is smoothed more, and in the end rejected.</li>
+        <li><b>QC certificate.</b> Each interface is accepted or flagged with its reasons, and marked chainable when its matches alone are good enough to link the microtubules.</li>
+        <li><b>Rescue and scale gate.</b> Where the first-pass match is under 30%, the microtubules re-estimate the rotation (adopted only if their match reaches 30% and beats the image's). Where the image committed a stretch, it is dropped if rotation alone matches the microtubules at least 10 points better. Only these interfaces are matched and warped again.</li>
+        <li><b>Image fill.</b> Where there are no microtubules, often in the corners, image patches give a second guarded warp per interface, held at zero on the microtubule ends.</li>
+        <li><b>Export.</b> Every section is resampled into one canvas with its pose. Each interface's warp (the MT warp plus the fill warp) is split in half between its two faces and blended linearly through Z. The graph gets the same pose and warp; microtubules are joined across chainable interfaces into single filaments and split where the two sides' overall directions differ by more than 45°.</li>
+      </ol>
+    </div>
+
+    <div class="panel tablewrap">
+      <h3>What moves between the blocks</h3>
+      <table>
+        <thead><tr><th>Stage</th><th>Holds</th><th>Shape</th></tr></thead>
+        <tbody>
+          <tr><td>Section volume</td><td>Image intensities, with the pixel size from the file header.</td><td class="v">(Z, Y, X)</td></tr>
+          <tr><td>Section graph</td><td>One row per traced point: microtubule id, x, y, z in Å.</td><td class="v">(N, 4)</td></tr>
+          <tr><td>Boundary face</td><td>Maximum over the outer slices of one face: half resolution for the coarse pose, quarter resolution for the fill.</td><td class="v">(Y/2, X/2), (Y/4, X/4)</td></tr>
+          <tr><td>Boundary end</td><td>Per microtubule end in the face band: id, position (x, y, z) and a unit direction.</td><td class="v">one per MT</td></tr>
+          <tr><td>Pose</td><td>A 2 × 2 linear part <i>L</i> and a shift <i>t</i> in Å (<i>x</i>′ = <i>L x</i> + <i>t</i>); angle and scale are kept as a summary. <i>L</i> carries the x/y stretch.</td><td class="v">one per section</td></tr>
+          <tr><td>Pairs</td><td>Matched ends of one interface: reference MT id, moving MT id, cost.</td><td class="v">(P, 3)</td></tr>
+          <tr><td>Warp</td><td>Thin-plate-spline displacement in section k's frame, fitted in ρ units, with its certificate (lowest det J, highest |curl|).</td><td class="v">one per interface</td></tr>
+          <tr><td>QC record</td><td>Accepted, warp passed, chainable, match fraction, shift spread (ρ), tangent break (degrees), reasons.</td><td class="v">one per interface</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="note"><b>Why two stages?</b> A cut section is distorted in two ways (<a href="../pandorica/stitch/HOW_IT_WORKS.md"><code>HOW_IT_WORKS.md</code></a>). The diamond knife compresses the whole section the same way, which one x/y stretch can undo: the coarse pose. The electron beam then shrinks the plastic unevenly, which differs from spot to spot: the fine warp. The image shows the whole section at once, so it sets the coarse pose. The microtubule ends are dense survey points where they exist, so they set the fine warp; fitting a pose from them instead would force a spatially varying shrink into one global transform (<code>register_warps_to_coarse</code> in <code>pipeline/core.py</code>).</p>
+  </section>
+
+  <!-- 2 -->
+  <section id="why" aria-labelledby="why-title">
+    <div class="head">
+      <span class="eyebrow">2 · Rationale</span>
+      <h2 id="why-title">Why we think it works</h2>
+      <p class="muted">Each design choice, the reason behind it, and how well it is supported today. <span class="status ok">Measured</span>: shown on a real stack. <span class="status ok">Tested</span>: shown by a synthetic test. <span class="status hint">Hint</span>: signs it helps, but not isolated or without ground truth. <span class="status open">Open</span>: no evidence yet, or evidence against. Every test is synthetic except three smoke tests on FemalePN, which check that the pipeline runs, not that it is right. No full run has yet been compared with ground truth.</p>
+    </div>
+    <div class="panel why">
+      <article class="why-row">
+        <div>
+          <h3>The image sets the whole pose</h3>
+          <p>The knife's compression is the same everywhere in a section, and the image shows the whole section, so the image fixes rotation, shift and the x/y stretch at once. The microtubules do not carry that global stretch, and a pose fitted to their ends would absorb the uneven shrink that belongs in the warp. The stretch is fitted only after the angle is fixed, with a small window, and clamped to a physical range.</p>
+        </div>
+        <div>
+          <span class="status hint">Hint</span>
+          <p class="ev">Synthetic: a planted 1.12 × 0.90 stretch is recovered within 0.04, a pure rotation gives no spurious stretch (under 2%), and a spatially varying residual goes to the warp, not the pose (<code>tests/test_image_pose_affine.py</code>, <code>tests/test_warps_to_coarse.py</code>). The code notes 0.07% spurious stretch over a real 10-section chain (<code>image_pose.py</code>). On a real chiral stack, scaling the windows with the face raised the microtubule match from about 26–43% to 60–68% (<code>HISTORY.md</code>). The image stretch can also overfit, which is why the scale gate exists (row below). Not yet compared with known poses.</p>
+        </div>
+      </article>
+      <article class="why-row">
+        <div>
+          <h3>Rotation by consensus, not by shape</h3>
+          <p>Every angle is tried. At each, the faces are cut into cells, matched, and a rigid move is fitted by RANSAC; the angle whose consistent cells carry the most confidence wins. A wrong 180° flip leaves few cells that agree on one rigid move, so it loses even on a symmetric section. A near-tie between the two branches is flagged rather than trusted.</p>
+        </div>
+        <div>
+          <span class="status hint">Hint</span>
+          <p class="ev">Synthetic: the true branch wins on support, and RANSAC recovers an 18° rotation through 9 gross outliers in 24 pairs (<code>tests/test_napari_stitch.py</code>). The contour cross-check reads the angle within 5–13° of the microtubule answer on all four FemalePN interfaces, where an older image search was off by 120–170° (<code>contour_rotation.py</code>, <code>README.md</code>). Against the claim: on a near-circular section with no nuclear contour the image coarse can still give a grossly wrong rotation, for example −140° (<code>HISTORY.md</code>); the microtubule rescue exists for that case. No real-data accuracy for the sweep itself.</p>
+        </div>
+      </article>
+      <article class="why-row">
+        <div>
+          <h3>The microtubules bend only what is left</h3>
+          <p>The ends are matched in the frame the image pose already set, and no pose is fitted from them. A single match pass drops true partners that the uneven shrink left 2 to 3 ρ apart, because the gates expect them within about 1 ρ. The bootstrap fits a guarded warp on the pairs it has, moves the ends by it and matches again with the same gates, so true partners come within reach while a false neighbour is not pulled along coherently.</p>
+        </div>
+        <div>
+          <span class="status ok">Measured</span>
+          <p class="ev">On a dense stack the bootstrap lifted the two weak interfaces from 35% to 49% and from 42% to 63% matched, while every healthy interface held or improved (<code>HISTORY.md</code>). The September review found that it mostly keeps the first pass's pairs: 92–97% survive to the second pass on 3 Monopoles interfaces (<a href="#stands">section 5</a>).</p>
+        </div>
+      </article>
+      <article class="why-row">
+        <div>
+          <h3>Clean pairs before any warp</h3>
+          <p>Reading the earlier Amira tool's code pointed to duplicate and clustered pairs as what made its warps spin into whirlpools. So the matcher drops near-duplicate ends, gates every pair by distance, angle and fold-back, takes a one-to-one assignment, uncrosses X-crossed neighbours, checks that each pair could be one continuing fibre, and removes pairs that do not fit one rigid move, all before the warp sees them.</p>
+        </div>
+        <div>
+          <span class="status ok">Tested</span>
+          <p class="ev">Synthetic tests of each step: outlier rejection, deduplication, the direction cost, the fold-back gate and the distance gate (<code>tests/test_matcher.py</code>). On real data only match fractions exist, without ground truth. The review found that the assignment first maximises the number of pairs, which reroutes about 5% of them (<a href="#stands">section 5</a>).</p>
+        </div>
+      </article>
+      <article class="why-row">
+        <div>
+          <h3>A warp that cannot fold or swirl</h3>
+          <p>Every warp is sampled on a grid and kept only if its Jacobian determinant stays at or above 0.05 (no fold) and its curl stays within 0.3 (no swirl). A swirl can keep det J positive, so both are checked. A warp that fails is smoothed more and refitted; if no smoothing on the ladder passes, it is rejected and the joint keeps its coarse pose. A bad warp is never applied.</p>
+        </div>
+        <div>
+          <span class="status ok">Tested</span>
+          <p class="ev">Synthetic: a moderate swirl passes the det J check but fails the curl check; a strong vortex fails both; an unguarded vortex fit folds, and the guarded fit refuses it (<code>tests/test_diagnostics.py</code>, <code>tests/test_warp.py</code>). On real data the record is qualitative ("fine warp clean, no foldover or whirlpool", <code>sprint_notes</code>). Each warp is checked alone; their sum in the export is not (<a href="#stands">section 5</a>).</p>
+        </div>
+      </article>
+      <article class="why-row">
+        <div>
+          <h3>The microtubules catch the image's mistakes</h3>
+          <p>A wrong rotation makes the microtubule match collapse, so a low first-pass match is the detector. There the microtubules re-estimate the rotation, and the result is adopted only if it matches better. In the same way, an image stretch is dropped only if rotation alone matches the microtubules clearly better. Neither step can make an interface worse by its own measure.</p>
+        </div>
+        <div>
+          <span class="status ok">Measured</span>
+          <p class="ev">On a dense stack (the code names Monopoles sec01→sec02) the rescue raised the worst interface from 37% to 83% matched; its warp went from rejected to accepted and about 72% of the boundary gap closed. The scale gate corrected one outlier interface from 49% to 76% matched, its corner stretch from about 5,200 Å to 0, and left the interfaces whose stretch helps untouched (<code>HISTORY.md</code>). Six synthetic tests cover both directions (<code>tests/test_warps_to_coarse.py</code>).</p>
+        </div>
+      </article>
+      <article class="why-row">
+        <div>
+          <h3>Connecting is judged apart from bending</h3>
+          <p>Whether two sections' microtubules are joined depends on their matches only (match fraction and shift spread), not on whether the warp passed. A warp too twisty to apply is dropped, but a clean set of matches still links the filaments; the joint check in the export then cuts joints whose two sides point different ways.</p>
+        </div>
+        <div>
+          <span class="status ok">Measured</span>
+          <p class="ev">On a dense stack the worst interface went from 0 to 759 connected filaments (70 of 829 chained pairs cut by the joint check), with every healthy interface unchanged byte for byte (<code>HISTORY.md</code>); three tests in <code>tests/test_qc.py</code>. Whether the 759 links are right has not been checked.</p>
+        </div>
+      </article>
+      <article class="why-row">
+        <div>
+          <h3>The image fills where there are no microtubules</h3>
+          <p>The microtubule warp is only pinned where microtubules are; elsewhere it extrapolates, and features in the corners were seen to jump 30 to 120 px between sections. The fill matches image patches outside the microtubule area and fits a second guarded warp, held at zero on the microtubule ends, so the two warps add without fighting.</p>
+        </div>
+        <div>
+          <span class="status hint">Hint</span>
+          <p class="ev">On a real chiral stack, raising the fill's search radius from 16 to 64 px took it from about 0 to 4 of 4 interfaces filled (<code>HISTORY.md</code>): the fill runs, but its accuracy in the corners is not measured. Synthetic tests of the block match and the mask (<code>tests/test_napari_stitch.py</code>).</p>
+        </div>
+      </article>
+      <article class="why-row">
+        <div>
+          <h3>Seams without stairs</h3>
+          <p>Two optional nudges at the seam, both on by default in <code>run_stitch</code>. A tangent term adds points that pull each matched, clearly tilted stub towards its partner's direction (weight 0.4), still under the warp guard. A jog cut drops near-vertical pairs whose displacement disagrees with their 8 nearest pairs by more than 2 ρ, since the direction-based joint check cannot judge them.</p>
+        </div>
+        <div>
+          <span class="status hint">Hint</span>
+          <p class="ev">The tangent term lowered one interface's mean tangent break from 10.6° to 4.4° and never newly rejected a warp; the jog cut fires about 15 times across a 10-section dense stack (<code>HISTORY.md</code>). Nobody has checked that the cut pairs were wrong. Synthetic tests in <code>tests/test_warp.py</code> and <code>tests/test_warps_to_coarse.py</code>.</p>
+        </div>
+      </article>
+      <article class="why-row">
+        <div>
+          <h3>Lengths in ρ travel across voxel sizes</h3>
+          <p>The microtubule gates are multiples of ρ, the median spacing of the boundary ends, so the same settings should serve any pixel size and density. The warp is fitted in ρ units too, which is what makes its smoothing ladder meaningful.</p>
+        </div>
+        <div>
+          <span class="status open">Open</span>
+          <p class="ev">Not every threshold is in ρ: the matcher's distance gate is clamped to 500–2,500 Å, and the image steps use pixels. No test varies the voxel size, and only FemalePN has a recorded pixel size (25.72 Å).</p>
+        </div>
+      </article>
+      <article class="why-row">
+        <div>
+          <h3>Flags instead of guesses</h3>
+          <p>An interface the tool cannot vouch for should say so instead of being stitched silently: the image marks branch ties, contour disagreements and untrusted shifts for review, and the QC certificate lists its reasons.</p>
+        </div>
+        <div>
+          <span class="status open">Open</span>
+          <p class="ev">On the default path the image's review marks reach the log only, and the overall verdict is printed but changes no output. The stronger checks in the code (A–P polarity, dense-intensity verification, the image and microtubule cross-check) never run from <code>run_stitch</code> (<a href="#stands">section 5</a>). The abstain logic itself is covered by synthetic tests (<code>tests/test_coarse_fusion.py</code>, <code>tests/test_coarse_hybrid.py</code>).</p>
+        </div>
+      </article>
+      <article class="why-row">
+        <div>
+          <h3>A fast export without visible error</h3>
+          <p>The warp is smooth by construction, so the export evaluates it on a grid every 8 canvas pixels and interpolates in between instead of at every pixel. The volume is warped a few slices at a time on the GPU and streamed to disk, so the stitched volume is never held in memory.</p>
+        </div>
+        <div>
+          <span class="status ok">Tested</span>
+          <p class="ev">On a synthetic 512 × 512 canvas the 8 px grid stays within a median of 0.05 px and a maximum of 0.5 px of the full evaluation (<code>tests/test_displacement_grid_coarse.py</code>). The speed-up (about 21 times) and the memory peak (about 3.5 GB instead of 11 GB) are stated in <code>HISTORY.md</code> and <code>README.md</code> without a recorded measurement.</p>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- 3 -->
+  <section id="blocks" aria-labelledby="blocks-title">
+    <div class="head">
+      <span class="eyebrow">3 · Detail</span>
+      <h2 id="blocks-title">Inside the blocks</h2>
+      <p class="muted">Each drawing opens one block of the pipeline. Read the wiring left to right. Paths are relative to <code>pandorica/stitch/</code>.</p>
+      <ul class="legend" aria-label="How to read the drawings">
+        <li><span class="sw pill-sw"></span>Data</li>
+        <li><span class="sw pt"></span>Estimated, tinted in the block's colour</li>
+        <li><span class="sw io"></span>Fixed operation</li>
+        <li><span class="sw hd"></span>Check</li>
+      </ul>
+    </div>
+
+    <div class="panel">
+      <h3>Faces, ends and the length unit</h3>
+      <p class="small muted">Code: <code>geometry.py</code> (<code>zmax_face</code>), <code>matching/mt_endpoints.py</code>, <code>_face</code> and <code>_endpoint_rho</code> in <code>pipeline/core.py</code>.</p>
+      <div class="cols">
+        <div>
+          <p><b>Which faces meet.</b> The stack must be stored with Z up: a section's top face is its high-Z end and its bottom face its low-Z end, and interface k joins the top of section k to the bottom of section k+1. The log labels each interface by the two section names, as in <code>sec09-&gt;sec10</code>.</p>
+        </div>
+        <div>
+          <p><b>Image faces.</b> The maximum over the boundary slab, for the pose and the fill. The contour cross-check uses the mean over the same slab instead, which keeps the smooth nuclear envelope that a maximum breaks into speckle.</p>
+        </div>
+        <div>
+          <p><b>Ends and ρ.</b> Per microtubule, the end inside the outer 15% of the Z range and a unit direction from its last 20% of points (at least 3). ρ is the median nearest-neighbour distance between the ends on section k's top face, typically thousands of Å, not the spacing along a traced line (about 100 Å), which would shrink every gate about 20 times.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Image coarse pose -->
+    <div class="panel" id="inside-coarse">
+      <h3>The image coarse pose</h3>
+      <p class="small muted">Code: <code>image_only_poses</code>, <code>_agree_rotation</code>, <code>_ransac_rigid</code> and <code>_affine_refine</code> in <code>image_pose.py</code>; <code>contour_rotation.py</code>. Two volumes are held at a time, at half resolution.</p>
+      <figure>
+        <div class="diagram inner">
+<svg viewBox="0 0 1010 262" role="img" aria-label="Inside the image coarse pose. Top: to score one angle theta, the bottom face of section k plus 1 is rotated by theta and block matched against the top face of section k on a 12 by 12 grid of cells; a weighted RANSAC fits one rigid move, and the score is the summed confidence of the cells that agree with it. Bottom: 24 angles 15 degrees apart are ranked at half resolution, the best is refined in 3 degree steps at full resolution, and the best angle more than 90 degrees away is scored too. A schematic plot shows the winner's peak and a lower peak on the opposite branch, with a line at 85 percent of the winner.">
+  <text class="sec" x="10" y="14">1 · SCORE ONE ANGLE θ</text>
+  <rect class="pill" x="10" y="28" width="170" height="24" rx="12"/>
+  <text class="op-t" x="95" y="44" text-anchor="middle">top face of k (fixed)</text>
+  <rect class="pill" x="10" y="70" width="170" height="24" rx="12"/>
+  <text class="op-t" x="95" y="86" text-anchor="middle">bottom face of k+1</text>
+  <line class="a-s" x1="180" y1="82" x2="214" y2="82" marker-end="url(#ahs)"/>
+  <rect class="op-fx" x="214" y="68" width="96" height="28" rx="4"/>
+  <text class="op-t" x="262" y="86" text-anchor="middle">rotate by θ</text>
+  <path class="a-s" d="M180,40 H352" marker-end="url(#ahs)"/>
+  <line class="a-s" x1="310" y1="82" x2="352" y2="82" marker-end="url(#ahs)"/>
+  <rect class="op-fx" x="352" y="28" width="140" height="68" rx="4"/>
+  <text class="op-t b" x="422" y="47" text-anchor="middle">block match</text>
+  <text class="op-s" x="422" y="64" text-anchor="middle">12 × 12 grid of cells</text>
+  <text class="op-s" x="422" y="80" text-anchor="middle">each with a confidence</text>
+  <line class="a-s" x1="492" y1="62" x2="530" y2="62" marker-end="url(#ahs)"/>
+  <rect class="op-pt" x="530" y="28" width="160" height="68" rx="4"/>
+  <text class="op-t b" x="610" y="47" text-anchor="middle">weighted RANSAC</text>
+  <text class="op-s" x="610" y="64" text-anchor="middle">rigid fit, 200 tries</text>
+  <text class="op-s" x="610" y="80" text-anchor="middle">2 pairs drawn by confidence</text>
+  <line class="a-s" x1="690" y1="62" x2="726" y2="62" marker-end="url(#ahs)"/>
+  <rect class="pill" x="726" y="50" width="274" height="24" rx="12"/>
+  <text class="op-t" x="863" y="66" text-anchor="middle">support(θ) = Σ confidence of the inliers</text>
+  <text class="d-note" x="726" y="94">a wrong 180° turn leaves few cells that agree on</text>
+  <text class="d-note" x="726" y="108">one rigid move, so its support collapses</text>
+
+  <line class="sep" x1="10" y1="124" x2="1000" y2="124"/>
+
+  <text class="sec" x="10" y="146">2 · SWEEP, THEN REFINE</text>
+  <rect class="op-fx" x="10" y="162" width="180" height="48" rx="4"/>
+  <text class="op-t b" x="100" y="182" text-anchor="middle">rank 24 angles</text>
+  <text class="op-s" x="100" y="199" text-anchor="middle">15° apart, half resolution</text>
+  <line class="a-s" x1="190" y1="186" x2="226" y2="186" marker-end="url(#ahs)"/>
+  <rect class="op-pt" x="226" y="162" width="190" height="48" rx="4"/>
+  <text class="op-t b" x="321" y="182" text-anchor="middle">refine around the best</text>
+  <text class="op-s" x="321" y="199" text-anchor="middle">±15° in 3° steps, full resolution</text>
+  <path class="a-s" d="M416,186 H434 V171 H452" marker-end="url(#ahs)"/>
+  <path class="a-s" d="M434,186 V201 H452" marker-end="url(#ahs)"/>
+  <circle class="jdot" cx="434" cy="186" r="2.5"/>
+  <rect class="pill" x="452" y="160" width="140" height="22" rx="11"/>
+  <text class="op-t" x="522" y="175" text-anchor="middle">winner</text>
+  <rect class="pill" x="452" y="190" width="140" height="22" rx="11"/>
+  <text class="op-t" x="522" y="205" text-anchor="middle">opposite branch</text>
+  <text class="d-note" x="452" y="232">best angle more than 90° away,</text>
+  <text class="d-note" x="452" y="246">rescored at full resolution</text>
+
+  <!-- Schematic plot, not data -->
+  <text class="d-label" x="660" y="146">SCHEMATIC · SUPPORT AGAINST θ</text>
+  <line class="axis" x1="660" y1="238" x2="990" y2="238"/>
+  <line class="axis" x1="660" y1="156" x2="660" y2="238"/>
+  <line class="a-skip dotted" x1="660" y1="172" x2="990" y2="172"/>
+  <path class="curve" d="M660,230 L682,229 C690,228 692,196 697,196 C702,196 704,228 712,229 L842,229 C850,228 855,160 862,160 C869,160 874,228 882,229 L990,230"/>
+  <text class="d-pt" x="872" y="164">winner</text>
+  <text class="d-pt" x="706" y="192">opposite branch</text>
+  <text class="d-pt" x="988" y="186" text-anchor="end">85% of the winner: a tie</text>
+  <text class="d-pt" x="660" y="254" text-anchor="middle">−180°</text>
+  <text class="d-pt" x="825" y="254" text-anchor="middle">0°</text>
+  <text class="d-pt" x="990" y="254" text-anchor="middle">180°</text>
+</svg>
+        </div>
+        <figcaption><b>1 · One angle.</b> The moving face is rotated by θ with the same resampling the export uses, then block matched against the fixed face; each matched cell carries a confidence (how sharp its correlation peak is). RANSAC draws two cell pairs at a time, in proportion to confidence, fits a rigid move, and counts the confidence of the cells that agree with it. <b>2 · All angles.</b> A cheap pass on faces at half resolution, with half the grid, only ranks the angles; every committed number comes from the full-resolution pass. The plot is a sketch, not data.</figcaption>
+      </figure>
+      <ul class="facts">
+        <li><b>Windows scale with the face.</b> Block-match search radius: the face size divided by 8, kept between 64 and 256 px. Cell window: half-size at least 64 px or the face size divided by 16. RANSAC inlier distance: at least 12 px or the search radius divided by 6.</li>
+        <li><b>Three checks, each marking the interface for review in the log.</b> <i>Branch tie</i>: the opposite branch keeps at least 85% of the winner's support; a normalised cross-correlation over a central disk (radius 0.45 of the face) then picks the branch, and the mark stays (<code>sign</code>). <i>Contour disagrees</i>: the nuclear-envelope outline and the dark organelles of the mean faces give a second angle; more than 10° from the sweep, or unsure itself, marks <code>sign</code>. <i>Too few agreeing cells</i>: under 12 cells, or under 12% of them, sets the shift to 0 but keeps the rotation, and marks <code>shift</code>.</li>
+        <li><b>The x/y stretch.</b> With the angle fixed and the shift trusted, a second block match with a small window (half-size 20 px on a 1,024 px face, scaled with the face) feeds a weighted RANSAC on 3 pairs at a time (300 tries) for a full 2 × 2 map. Its stretches are clamped to 0.85–1.15 per axis and 0.90–1.10 in area, and it is committed only when the larger stretch exceeds the smaller by more than 2%, with at least 12 inliers. Otherwise the rigid pose stands.</li>
+        <li><b>From relative to absolute.</b> Each interface's relative pose is composed onto the previous section's absolute pose; section 0 is the identity.</li>
+      </ul>
+    </div>
+
+    <!-- Matching -->
+    <div class="panel" id="inside-match">
+      <h3>Matching the ends</h3>
+      <p class="small muted">Code: <code>match_sections</code> in <code>matching/matcher.py</code>; <code>_bootstrap_correspondences</code> and <code>register_warps_to_coarse</code> in <code>pipeline/core.py</code>.</p>
+      <figure>
+        <div class="diagram inner">
+<svg viewBox="0 0 1010 304" role="img" aria-label="Inside the matcher. One pass: deduplicate ends closer than 0.1 rho; gate pairs by distance up to 5 rho clamped to 500 to 2,500 angstrom, angle up to 30 degrees and no fold-back; cost 0.7 times distance over the gate plus 0.3 times one minus the absolute cosine of the angle; Hungarian assignment; uncross X-crossed pairs within 2 rho; smoothness gate; outlier rejection by rigid residual above 2 rho. The result is pairs and a match fraction. The bootstrap repeats: fit a guarded warp on the pairs, move the moving ends by it, match again, until the gain is below 0.01, the warp is unsafe, or 6 passes.">
+  <text class="sec" x="10" y="14">1 · ONE MATCH PASS · LENGTHS IN ρ</text>
+  <rect class="pill" x="10" y="28" width="170" height="24" rx="12"/>
+  <text class="op-t" x="95" y="44" text-anchor="middle">ends on top of k</text>
+  <rect class="pill" x="10" y="60" width="170" height="24" rx="12"/>
+  <text class="op-t" x="95" y="76" text-anchor="middle">ends of k+1, posed</text>
+  <path class="a-s" d="M180,40 H200 V56"/>
+  <path class="a-s" d="M180,72 H200 V56"/>
+  <circle class="jdot" cx="200" cy="56" r="2.5"/>
+  <line class="a-s" x1="200" y1="56" x2="226" y2="56" marker-end="url(#ahs)"/>
+
+  <rect class="op-fx" x="226" y="28" width="170" height="60" rx="4"/>
+  <text class="op-t b" x="311" y="48" text-anchor="middle">deduplicate</text>
+  <text class="op-s" x="311" y="65" text-anchor="middle">drop ends closer</text>
+  <text class="op-s" x="311" y="80" text-anchor="middle">than 0.1 ρ</text>
+  <line class="a-s" x1="396" y1="58" x2="426" y2="58" marker-end="url(#ahs)"/>
+  <rect class="op-fx" x="426" y="28" width="170" height="60" rx="4"/>
+  <text class="op-t b" x="511" y="48" text-anchor="middle">gates</text>
+  <text class="op-s" x="511" y="65" text-anchor="middle">distance ≤ 5 ρ (500–2,500 Å)</text>
+  <text class="op-s" x="511" y="80" text-anchor="middle">angle ≤ 30°, no fold-back</text>
+  <line class="a-s" x1="596" y1="58" x2="626" y2="58" marker-end="url(#ahs)"/>
+  <rect class="op-fx" x="626" y="28" width="170" height="60" rx="4"/>
+  <text class="op-t b" x="711" y="48" text-anchor="middle">cost</text>
+  <text class="op-s" x="711" y="65" text-anchor="middle">0.7 · distance / gate</text>
+  <text class="op-s" x="711" y="80" text-anchor="middle">+ 0.3 · (1 − |cos Δθ|)</text>
+  <line class="a-s" x1="796" y1="58" x2="826" y2="58" marker-end="url(#ahs)"/>
+  <rect class="op-co" x="826" y="28" width="174" height="60" rx="4"/>
+  <text class="op-t b" x="913" y="48" text-anchor="middle">Hungarian</text>
+  <text class="op-s" x="913" y="65" text-anchor="middle">one partner per end</text>
+  <text class="op-s" x="913" y="80" text-anchor="middle">at most</text>
+
+  <path class="a-s" d="M913,88 V100 H118 V112" marker-end="url(#ahs)"/>
+  <rect class="op-fx" x="33" y="112" width="170" height="60" rx="4"/>
+  <text class="op-t b" x="118" y="132" text-anchor="middle">uncross</text>
+  <text class="op-s" x="118" y="149" text-anchor="middle">X-crossed pairs within 2 ρ</text>
+  <text class="op-s" x="118" y="164" text-anchor="middle">swap unless tangents object</text>
+  <line class="a-s" x1="203" y1="142" x2="233" y2="142" marker-end="url(#ahs)"/>
+  <rect class="op-fx" x="233" y="112" width="170" height="60" rx="4"/>
+  <text class="op-t b" x="318" y="132" text-anchor="middle">one fibre?</text>
+  <text class="op-s" x="318" y="149" text-anchor="middle">tangents ≤ 45° apart,</text>
+  <text class="op-s" x="318" y="164" text-anchor="middle">chord ≤ 60° off each</text>
+  <line class="a-s" x1="403" y1="142" x2="433" y2="142" marker-end="url(#ahs)"/>
+  <rect class="op-fx" x="433" y="112" width="170" height="60" rx="4"/>
+  <text class="op-t b" x="518" y="132" text-anchor="middle">outliers</text>
+  <text class="op-s" x="518" y="149" text-anchor="middle">fit one rigid move, drop</text>
+  <text class="op-s" x="518" y="164" text-anchor="middle">residuals over 2 ρ, twice</text>
+  <line class="a-s" x1="603" y1="142" x2="633" y2="142" marker-end="url(#ahs)"/>
+  <rect class="pill" x="633" y="130" width="200" height="24" rx="12"/>
+  <text class="op-t" x="733" y="146" text-anchor="middle">pairs + match fraction</text>
+  <text class="d-note" x="633" y="174">match fraction = pairs / the smaller end count</text>
+
+  <line class="sep" x1="10" y1="194" x2="1000" y2="194"/>
+
+  <text class="sec" x="10" y="214">2 · BOOTSTRAP: RECOVER PARTNERS THE POSE LEFT 2–3 ρ APART</text>
+  <rect class="pill" x="10" y="240" width="120" height="24" rx="12"/>
+  <text class="op-t" x="70" y="256" text-anchor="middle">pairs</text>
+  <line class="a-s" x1="130" y1="252" x2="160" y2="252" marker-end="url(#ahs)"/>
+  <rect class="op-pr" x="160" y="228" width="180" height="48" rx="4"/>
+  <text class="op-t b" x="250" y="248" text-anchor="middle">guarded warp</text>
+  <text class="op-s" x="250" y="265" text-anchor="middle">fitted on these pairs</text>
+  <line class="a-s" x1="340" y1="252" x2="370" y2="252" marker-end="url(#ahs)"/>
+  <rect class="op-fx" x="370" y="228" width="180" height="48" rx="4"/>
+  <text class="op-t b" x="460" y="248" text-anchor="middle">move the moving ends</text>
+  <text class="op-s" x="460" y="265" text-anchor="middle">by that warp</text>
+  <line class="a-s" x1="550" y1="252" x2="580" y2="252" marker-end="url(#ahs)"/>
+  <rect class="op-co" x="580" y="228" width="160" height="48" rx="4"/>
+  <text class="op-t b" x="660" y="248" text-anchor="middle">match again</text>
+  <text class="op-s" x="660" y="265" text-anchor="middle">same gates</text>
+  <path class="a-s" d="M660,276 V292 H70 V266" marker-end="url(#ahs)"/>
+  <text class="d-note" x="760" y="240">stops when the match fraction gains</text>
+  <text class="d-note" x="760" y="254">under 0.01, the warp is unsafe, or after</text>
+  <text class="d-note" x="760" y="268">6 passes; keeps the best pairs seen</text>
+</svg>
+        </div>
+        <figcaption><b>1 · One pass.</b> Every gate is in ρ except the distance gate's clamp in Å. The fold-back gate rejects a pair whose in-plane directions point opposite ways, when both are clearly tilted; near-vertical ends are exempt. The Hungarian assignment is one to one, and pairs that fail a gate get a cost so high that it first maximises the number of pairs, then minimises their cost. <b>2 · Bootstrap.</b> The warp and the QC are then computed once more from the best pairs in the original, un-warped frame, so the export carries one warp per interface and the shift spread is measured on the real residual.</figcaption>
+      </figure>
+      <ul class="facts">
+        <li><b>Optional constellation term</b> (off by default, <code>constellation_weight=0</code>): blends into the cost how well each pair's local neighbourhood pattern agrees (a shape-context histogram of its 10 nearest ends within 6 ρ), to separate parallel neighbours in dense bundles. Suggested 0.3–0.5.</li>
+        <li><b>Confidence for the QC.</b> Match fraction (pairs over the smaller end count after deduplication) and shift spread (the length of the standard deviation of the pair shifts, in ρ). The rescue reads the match fraction of the first, un-bootstrapped pass.</li>
+        <li><b>Jog cut, for the graph only.</b> After the warp is fitted, near-vertical pairs (in-plane direction under 0.2 on either side) whose displacement differs from the median of their 8 nearest pairs by more than 2 ρ are dropped from the pairs used to chain microtubules. They still shaped the warp.</li>
+      </ul>
+    </div>
+
+    <!-- Warp -->
+    <div class="panel" id="inside-warp">
+      <h3>The guarded warp</h3>
+      <p class="small muted">Code: <code>fit_guarded_warp</code> in <code>transform/warp.py</code>; <code>FieldCertificate</code> in <code>transform/diagnostics.py</code>. The same function fits the bootstrap's warps, the final MT warp and the fill warp.</p>
+      <figure>
+        <div class="diagram inner">
+<svg viewBox="0 0 1010 392" role="img" aria-label="Inside the guarded warp. The pairs are divided by rho and centred, a thin-plate spline is fitted with smoothing s, plus optional tangent points, and the field is sampled on a 48 by 48 grid. If det J is at least 0.05 and the absolute curl at most 0.3 everywhere, the warp is accepted; otherwise the next smoothing in the ladder 0, 1, 5, 20, 100 is tried; if none passes, the warp is rejected and the joint keeps its coarse pose. Below, three sketches: a fold, where det J drops to zero or below; a swirl, where det J stays positive but the curl is too large; and a safe bend.">
+  <text class="sec" x="10" y="14">1 · FIT, CHECK, SMOOTH MORE</text>
+  <rect class="pill" x="10" y="40" width="170" height="24" rx="12"/>
+  <text class="op-t" x="95" y="56" text-anchor="middle">pairs: moving → reference</text>
+  <line class="a-s" x1="180" y1="52" x2="210" y2="52" marker-end="url(#ahs)"/>
+  <rect class="op-fx" x="210" y="34" width="110" height="36" rx="4"/>
+  <text class="op-t" x="265" y="56" text-anchor="middle">÷ ρ, centred</text>
+  <line class="a-s" x1="320" y1="52" x2="350" y2="52" marker-end="url(#ahs)"/>
+  <rect class="op-pr" x="350" y="28" width="170" height="48" rx="4"/>
+  <text class="op-t b" x="435" y="48" text-anchor="middle">thin-plate spline</text>
+  <text class="op-s" x="435" y="65" text-anchor="middle">smoothing s</text>
+  <line class="a-s" x1="520" y1="52" x2="550" y2="52" marker-end="url(#ahs)"/>
+  <rect class="op-fx" x="550" y="28" width="150" height="48" rx="4"/>
+  <text class="op-t b" x="625" y="48" text-anchor="middle">sample the field</text>
+  <text class="op-s" x="625" y="65" text-anchor="middle">48 × 48 grid, box +10%</text>
+  <line class="a-s" x1="700" y1="52" x2="730" y2="52" marker-end="url(#ahs)"/>
+  <rect class="op-hd" x="730" y="22" width="150" height="60" rx="4"/>
+  <text class="op-t b" x="805" y="42" text-anchor="middle">det J ≥ 0.05</text>
+  <text class="op-t b" x="805" y="58" text-anchor="middle">and |curl| ≤ 0.3</text>
+  <text class="op-s" x="805" y="74" text-anchor="middle">on every grid point</text>
+  <line class="a-s" x1="880" y1="40" x2="910" y2="40" marker-end="url(#ahs)"/>
+  <rect class="pill" x="910" y="28" width="90" height="24" rx="12"/>
+  <text class="op-t" x="955" y="44" text-anchor="middle">accept</text>
+  <path class="a-hd" d="M880,70 H895 V152 H910" marker-end="url(#ahs-hd)"/>
+  <rect class="pill-hd" x="910" y="140" width="90" height="24" rx="12"/>
+  <text class="op-t" x="955" y="156" text-anchor="middle">reject</text>
+  <text class="d-note" x="914" y="184">no s left: the</text>
+  <text class="d-note" x="914" y="198">joint keeps its</text>
+  <text class="d-note" x="914" y="212">coarse pose</text>
+  <path class="a-hd" d="M805,82 V150 H480 V78" marker-end="url(#ahs-hd)"/>
+  <text class="d-note" x="642" y="168" text-anchor="middle">fails: next smoothing s, 0 → 1 → 5 → 20 → 100</text>
+  <rect class="pill" x="230" y="110" width="200" height="24" rx="12"/>
+  <text class="op-t" x="330" y="126" text-anchor="middle">tangent points (weight 0.4)</text>
+  <path class="a-s" d="M395,110 V78" marker-end="url(#ahs)"/>
+  <text class="d-note" x="230" y="154">only pairs whose two directions</text>
+  <text class="d-note" x="230" y="168">are clearly in-plane</text>
+
+  <line class="sep" x1="10" y1="230" x2="1000" y2="230"/>
+  <text class="sec" x="10" y="252">2 · WHAT THE GUARD TELLS APART (SKETCHES)</text>
+
+  <!-- Fold -->
+  <path class="gl" d="M40,266 V346 M75,266 V346 M145,266 V346 M180,266 V346"/>
+  <path class="gl" d="M40,266 H180 M40,286 H180 M40,306 H180 M40,326 H180 M40,346 H180"/>
+  <path class="gl-bad" d="M110,266 Q200,306 110,346"/>
+  <text class="d-title-s" x="110" y="368" text-anchor="middle">Fold</text>
+  <text class="op-s" x="110" y="384" text-anchor="middle">det J ≤ 0: the map turns inside out</text>
+
+  <!-- Swirl -->
+  <path class="gl" d="M330,266 V346 M470,266 V346 M330,266 H470 M330,346 H470"/>
+  <path class="gl" d="M365,266 C375,286 355,326 365,346 M435,266 C445,286 425,326 435,346"/>
+  <path class="gl" d="M330,286 C350,276 450,296 470,286 M330,326 C350,316 450,336 470,326"/>
+  <path class="gl-bad" d="M400,266 C430,286 370,326 400,346 M330,306 C360,276 440,336 470,306"/>
+  <text class="d-title-s" x="400" y="368" text-anchor="middle">Swirl</text>
+  <text class="op-s" x="400" y="384" text-anchor="middle">det J &gt; 0, but |curl| &gt; 0.3</text>
+
+  <!-- Safe bend -->
+  <path class="gl-ok" d="M620,266 Q630,306 620,346 M655,266 Q665,306 655,346 M690,266 Q700,306 690,346 M725,266 Q735,306 725,346 M760,266 Q770,306 760,346"/>
+  <path class="gl-ok" d="M620,266 Q690,274 760,266 M620,286 Q690,294 760,286 M620,306 Q690,314 760,306 M620,326 Q690,334 760,326 M620,346 Q690,354 760,346"/>
+  <text class="d-title-s" x="690" y="368" text-anchor="middle">Safe bend</text>
+  <text class="op-s" x="690" y="384" text-anchor="middle">both bounds hold: applied</text>
+
+  <text class="d-note" x="830" y="296">a swirl can keep det J above 0,</text>
+  <text class="d-note" x="830" y="310">which is why the curl is</text>
+  <text class="d-note" x="830" y="324">checked as well</text>
+</svg>
+        </div>
+        <figcaption><b>1 · The guard.</b> Fitting in ρ units matters: in raw coordinates (around 10<sup>5</sup> Å) the spline's kernel is so large that the smoothing does nothing. det J and the curl do not depend on the unit, so the certificate on the normalised grid holds for the real warp. The tangent points enter the fit only, not the check. <b>2 · Sketches</b> of the three cases, not computed fields.</figcaption>
+      </figure>
+<pre class="formula">map          f(x) = x + u(x),   J = I + ∇u
+fold check   det J = (1 + ∂u_x/∂x)(1 + ∂u_y/∂y) − (∂u_x/∂y)(∂u_y/∂x)  ≥ ε = 0.05
+swirl check  |curl u| = |∂u_y/∂x − ∂u_x/∂y|  ≤ Ω = 0.3   (run_stitch; library default 1.0)
+grid         48 × 48 over the pairs' box plus 10%, central differences, border row dropped</pre>
+      <ul class="facts">
+        <li><b>Ladder.</b> Smoothing 0 (exact through the pairs), then 1, 5, 20 and 100, in ρ units; the first that passes wins. The ladder is capped on purpose: a real fold or vortex would need to be flattened away entirely, so it is rejected instead.</li>
+        <li><b>Too few pairs.</b> Under 4 pairs a spline cannot be fitted: the warp is the identity, which is trivially safe.</li>
+        <li><b>Tangent points.</b> For each pair whose two directions are both clearly in-plane (length over 0.2), one more point 0.2 ρ along the moving stub's direction is mapped to the same step along a direction pulled 40% of the way towards the reference stub's. The pull is soft, so it never fully hides a wrong match.</li>
+        <li><b>Also reported, not gated:</b> the Okubo–Weiss minimum, which is negative where rotation dominates.</li>
+      </ul>
+    </div>
+
+    <!-- QC certificate -->
+    <div class="panel tablewrap" id="inside-qc">
+      <h3>The QC certificate and the joint verdict</h3>
+      <p class="small muted">Code: <code>assess_interface</code> in <code>pipeline/qc.py</code>; the verdict lines come from <code>_joint_status</code> in <code>cli.py</code>.</p>
+      <table>
+        <thead><tr><th>Check</th><th>Pass when</th><th>Counts for</th></tr></thead>
+        <tbody>
+          <tr><td>The warp is safe</td><td class="v">det J ≥ 0.05, |curl| ≤ 0.3</td><td>accepted; the MT warp is applied</td></tr>
+          <tr><td>Enough ends matched</td><td class="v">match fraction ≥ 0.30</td><td>accepted; chainable</td></tr>
+          <tr><td>The shifts agree</td><td class="v">shift spread ≤ 2.5 ρ</td><td>accepted; chainable</td></tr>
+          <tr><td>Tangents continue</td><td class="v">(20°, not used)</td><td>reported only: ends that cross the cut steeply have noisy in-plane directions, so it read 80° and 40° at correct rotations on FemalePN and MaleMeiosis</td></tr>
+        </tbody>
+      </table>
+      <ul class="facts">
+        <li><b>Accepted</b> means every gating check passes; otherwise the interface is flagged and the reasons are logged. The run's overall verdict is "every interface accepted".</li>
+        <li><b>Chainable</b> needs only the two match checks, so a joint whose warp failed can still link its microtubules.</li>
+        <li>An interface with fewer than 2 ends on a face, or fewer than 2 pairs, is <b>image-only</b>: accepted, not chainable, no MT warp; the fill covers it.</li>
+        <li><b>In the terminal</b> each joint gets one line: <code>connected · warp applied</code>, <code>connected · warp too twisty — kept coarse alignment</code> (the MT warp is not applied; the fill warp still can be), or <code>REVIEW … not connected</code>. The full table always goes to <code>stitch_log.txt</code>; <code>--dev</code> also prints it.</li>
+      </ul>
+    </div>
+
+    <!-- Rescue and scale gate -->
+    <div class="panel" id="inside-rescue">
+      <h3>The MT rescue and the scale gate</h3>
+      <p class="small muted">Code: <code>rescue_coarse_poses</code>, <code>_rescue_relative</code> and <code>gate_coarse_scale</code> in <code>pipeline/core.py</code>; called from <code>stitch_sections</code> in <code>pipeline/stitcher.py</code>. They target different interfaces.</p>
+      <div class="cols">
+        <div>
+          <p><b>Rotation rescue.</b> Triggered where the first, un-bootstrapped match fraction is under 0.30; the bootstrap could otherwise lift a collapsed interface above the gate and hide a wrong rotation. The microtubule ends are searched for a rotation with the multi-seed Coherent Point Drift (12 seed angles, outlier weight 0.4, seeds ranked by the median residual), and a rigid move is fitted from the matches. It is adopted only if its match fraction is at least 0.30 and higher than the image's.</p>
+        </div>
+        <div>
+          <p><b>Stretch recovery inside the rescue.</b> A rescued interface has lost the image's stretch, so with at least 12 bootstrapped pairs a full 2 × 2 map is fitted to them. It is kept when the larger stretch exceeds the smaller by more than 5% and the match does not drop. On Monopoles the residual stretch is about 1% where the image already applied it, and about 10% on the rescued sec01→sec02.</p>
+        </div>
+        <div>
+          <p><b>Scale gate.</b> For every interface whose relative pose stretches or shrinks by more than 5% along either axis, the bootstrapped match is scored with the full pose and with rotation alone (rotated in place about the ends' centre). If rotation alone reaches 0.30 and beats the full pose by more than 0.10, the stretch is dropped. The code's example: Monopoles sec12→sec13 with a 12% area gain that two adjacent sections cannot show.</p>
+        </div>
+      </div>
+      <p>Afterwards only the changed interfaces are matched and warped again; the others keep their first-pass result, because their relative poses did not change.</p>
+    </div>
+
+    <!-- Image fill -->
+    <div class="panel" id="inside-fill">
+      <h3>The image fill</h3>
+      <p class="small muted">Code: <code>image_residual_warps</code> in <code>image_warp.py</code>; block matching in <code>match.py</code>.</p>
+      <ul class="facts">
+        <li><b>Faces at quarter resolution</b> (the maximum over the 10 outer slices, read every 4th voxel). Section k+1's bottom face is resampled into section k's frame with the pose and, if accepted, the MT warp.</li>
+        <li><b>Mask.</b> The ends of both faces, each grown by 24 px, mark where the microtubules already hold the alignment.</li>
+        <li><b>Block match outside the mask</b> on a 16 × 16 grid of cells: window half-size 64 px, search radius 64 px, a correlation peak at least 4 standard deviations above the median of its map, located to sub-pixel precision. Metric: <code>ncc</code> by default; <code>grad</code> uses edges, <code>mi</code> mutual information (about 2 times slower, for contrast mismatches).</li>
+        <li><b>Fit.</b> The matches plus every microtubule end held at zero displacement, deduplicated, go to the same guarded warp (curl bound 0.3). Fewer than 4 matches: no fill on that interface.</li>
+        <li><b>Run in parallel</b> over cells in <code>workers</code> processes (the CPU count minus 2 by default); only the small faces are shared, so memory stays low.</li>
+      </ul>
+    </div>
+
+    <!-- Export -->
+    <div class="panel" id="inside-export">
+      <h3>The export</h3>
+      <p class="small muted">Code: <code>export_stitched</code> in <code>stitch.py</code>; <code>accel.py</code> (GPU); <code>chain.py</code> (filaments); <code>pandorica/io/amira.py</code> (writing).</p>
+      <figure>
+        <div class="diagram inner">
+<svg viewBox="0 0 1010 300" role="img" aria-label="Inside the export. Left, three sections seen from the side with Z up. Each interface's warp is split in half: the section above takes plus half on its bottom face, the section below minus half on its top face. Inside a section the displacement blends linearly from its bottom face to its top face. Right, the wiring: the MT warp and the fill warp of an interface are summed if accepted, evaluated on an 8 pixel grid of the canvas and upsampled bilinearly, blended per slice and sampled, on the GPU in chunks of slices, then each section's slab is written to a temporary file and the slabs are joined into stitched_volume.am.">
+  <text class="sec" x="10" y="14">ONE SECTION'S Z-BLEND, SEEN FROM THE SIDE (Z UP)</text>
+  <rect class="slab" x="90" y="30" width="240" height="60"/>
+  <rect class="slab" x="90" y="104" width="240" height="80"/>
+  <rect class="slab" x="90" y="198" width="240" height="60"/>
+  <text class="d-sub" x="82" y="64" text-anchor="end">section k+1</text>
+  <text class="d-sub" x="82" y="148" text-anchor="end">section k</text>
+  <text class="d-sub" x="82" y="232" text-anchor="end">section k−1</text>
+
+  <line class="a-skip dotted" x1="210" y1="34" x2="210" y2="254"/>
+  <!-- interface k: k+1's bottom takes +½ W(k), k's top takes −½ W(k) -->
+  <line class="wv" x1="210" y1="84" x2="246" y2="84" marker-end="url(#ahs-pr)"/>
+  <line class="wv" x1="210" y1="110" x2="174" y2="110" marker-end="url(#ahs-pr)"/>
+  <!-- inside section k: linear in Z between +½ W(k−1) at the bottom and −½ W(k) at the top -->
+  <line class="wv" x1="210" y1="130" x2="195" y2="130" marker-end="url(#ahs-pr)"/>
+  <line class="wv" x1="210" y1="158" x2="237" y2="158" marker-end="url(#ahs-pr)"/>
+  <line class="wv" x1="210" y1="178" x2="258" y2="178" marker-end="url(#ahs-pr)"/>
+  <!-- interface k−1: k−1's top takes −½ W(k−1) -->
+  <line class="wv" x1="210" y1="204" x2="162" y2="204" marker-end="url(#ahs-pr)"/>
+
+  <text class="d-sub" x="340" y="88">bottom of k+1: +½ W(k)</text>
+  <text class="d-sub" x="340" y="114">top of k: −½ W(k)</text>
+  <text class="d-sub" x="340" y="148">in between: linear in Z</text>
+  <text class="d-sub" x="340" y="182">bottom of k: +½ W(k−1)</text>
+  <text class="d-sub" x="340" y="208">top of k−1: −½ W(k−1)</text>
+  <text class="d-note" x="90" y="282">each interface's warp W is split between its two faces, so they meet half way</text>
+
+  <rect class="pill" x="560" y="30" width="200" height="24" rx="12"/>
+  <text class="op-t" x="660" y="46" text-anchor="middle">MT warp of interface k</text>
+  <rect class="pill" x="560" y="62" width="200" height="24" rx="12"/>
+  <text class="op-t" x="660" y="78" text-anchor="middle">fill warp of interface k</text>
+  <path class="a-s" d="M760,42 H776 V58"/>
+  <path class="a-s" d="M760,74 H776 V58"/>
+  <circle class="jdot" cx="776" cy="58" r="2.5"/>
+  <line class="a-s" x1="776" y1="58" x2="800" y2="58" marker-end="url(#ahs)"/>
+  <rect class="op-fx" x="800" y="40" width="190" height="36" rx="4"/>
+  <text class="op-t" x="895" y="62" text-anchor="middle">sum of the accepted: W(k)</text>
+  <path class="a-s" d="M895,76 V90 H775 V102" marker-end="url(#ahs)"/>
+  <rect class="op-fx" x="560" y="102" width="430" height="36" rx="4"/>
+  <text class="op-t" x="775" y="124" text-anchor="middle">evaluate on an 8 px grid of the canvas, upsample bilinearly</text>
+  <line class="a-s" x1="775" y1="138" x2="775" y2="152" marker-end="url(#ahs)"/>
+  <rect class="op-fx" x="560" y="152" width="430" height="36" rx="4"/>
+  <text class="op-t" x="775" y="174" text-anchor="middle">per slice: blend the two faces' halves, undo the pose, sample the section</text>
+  <line class="a-s" x1="775" y1="188" x2="775" y2="202" marker-end="url(#ahs)"/>
+  <rect class="op-fx" x="560" y="202" width="430" height="36" rx="4"/>
+  <text class="op-t" x="775" y="224" text-anchor="middle">GPU: chunks of slices (CUDA, then Apple MPS); else CPU</text>
+  <line class="a-s" x1="775" y1="238" x2="775" y2="252" marker-end="url(#ahs)"/>
+  <rect class="op-fx" x="560" y="252" width="430" height="36" rx="4"/>
+  <text class="op-t" x="775" y="274" text-anchor="middle">write each slab to a temporary file; join them into stitched_volume.am</text>
+</svg>
+        </div>
+        <figcaption><b>Z-blend</b> (<code>zblend=True</code>, the default in <code>run_stitch</code>). Without it, each section takes the whole warp of the interface below it, the same at every Z. With it, warping one joint no longer moves the next, at the cost of bending every face, section 0's top face included. Arrow lengths are illustrative.</figcaption>
+      </figure>
+      <ul class="facts">
+        <li><b>Canvas.</b> The box around every section's corners under its pose; with <code>--trim-to-mts</code>, the box around the posed microtubules plus 5% per side (opt-in, because a section's content outside its microtubules would be cut).</li>
+        <li><b>Warp grid.</b> 8 canvas pixels (<code>warp_coarse_px</code>); 0 evaluates the spline at every pixel.</li>
+        <li><b>GPU chunk.</b> With CUDA, as many slices as fit in half the free memory, from 1 to 64; Apple MPS reports no free memory, so it uses 4.</li>
+        <li><b>Memory.</b> Volumes are loaded one section at a time; each warped slab is written straight to a temporary file and the files are joined into the <code>.am</code>, so the stitched volume is never in memory.</li>
+        <li><b>The graph.</b> Each section's points get its pose, the same Z-blended warp and a Z offset that stacks the sections by their slice counts. Microtubules paired across chainable interfaces are joined into one filament id (union–find); each joined filament is oriented so it reads continuously, then split at any joint where the overall XY direction of the two sides differs by more than 45°; single-point filaments are dropped. The graph carries labels for checking chains in napari: <code>SectionIdx</code>, <code>AtJoint</code>, <code>JointAngleDeg</code>, <code>ChainLength</code>, <code>NJoints</code>, <code>WasSplit</code> and others.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 4 -->
+  <section id="modes" aria-labelledby="modes-title">
+    <div class="head">
+      <span class="eyebrow">4 · Use</span>
+      <h2 id="modes-title">Three ways to run</h2>
+      <p class="muted">The mode follows the files: microtubules are used only if every section has a graph, and the image only if every section has a volume.</p>
+    </div>
+    <div class="cols">
+      <div class="panel">
+        <h3>Volumes and graphs (default)</h3>
+        <p class="small muted">Every section has both.</p>
+        <p>The path drawn in <a href="#pipeline">section 1</a>: the image sets the poses, the microtubules the fine warp, the image fills the rest. Writes the stitched volume, the merged graph and the log.</p>
+      </div>
+      <div class="panel">
+        <h3>Graphs only</h3>
+        <p class="small muted">Every section has a graph, some lack a volume. Code: <code>hybrid_coarse</code>, <code>register_section_stack</code>.</p>
+        <ul class="facts">
+          <li>Rotation per interface from the ends alone: Coherent Point Drift from 12 seed angles, with diagnostics for a 180° flip and a near-collinear bundle.</li>
+          <li>Ambiguous interfaces are resolved towards the trend of the confident ones when one branch lies within 30° of it and the other does not; otherwise they stay flagged. The A–P polarity hint needs section images, which <code>run_stitch</code> does not pass.</li>
+          <li>Rigid fit per interface, then a global least-squares solve with section 0 fixed and each interface weighted by its match fraction squared. Scale is off by default (<code>--allow-scale</code>, prior 1.0), smoothness 0.</li>
+          <li>Guarded warp and QC as above; no fill. Writes the graph and the log only.</li>
+        </ul>
+      </div>
+      <div class="panel">
+        <h3>Volumes only</h3>
+        <p class="small muted">Some section has no graph, every section has a volume.</p>
+        <ul class="facts">
+          <li>The image coarse pose as above, then the image fill over the whole face as the only fine warp.</li>
+          <li>The run starts with a warning: on a round or symmetric section the image alone may give a wrong rotation, so check it by eye.</li>
+          <li>Writes the stitched volume and the log, plus a merged graph, without chaining, if some sections have graphs.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="panel">
+      <h3>Running it</h3>
+<pre class="cmd">pip install pandorica                 # stitcher and command line
+pip install "pandorica[napari]"       # plus the napari validator
+
+pandorica stitch --input-dir path/to/sections          # writes path/to/sections/stitched_output/
+pandorica stitch --input-dir path/to/sections --save-inspect --trim-to-mts --dev</pre>
+      <ul class="facts">
+        <li>Every argument of <code>run_stitch</code> is a flag: underscores become dashes, and yes-or-no settings come as pairs such as <code>--zblend/--no-zblend</code>. From Python: <code>run_stitch("path/to/sections")</code> in <code>pandorica.stitch.cli</code>.</li>
+        <li>The terminal shows one line per interface and per joint; <code>--dev</code> streams every detail. <code>stitch_log.txt</code> always holds everything, starting with the settings used, so a run can be repeated exactly.</li>
+        <li><code>--save-inspect</code> writes <code>stitch_inspect.npz</code> (match lines, warp field, |curl| and QC per interface), which the napari Warp / Match Inspector overlays without running the stitch again.</li>
+        <li>ASCII Amira volumes parse about 200 times slower than binary ones, and the run reads each volume more than once; the run warns and suggests re-saving them as binary.</li>
+      </ul>
+      <p class="small muted">Recorded times, both on 11-section stacks: running the 12 seeds of the Coherent Point Drift search in parallel cut it from 33.2 to 7.3 s per interface; on a Mac with MPS the warp phase took 332.0 s (from 463.6 s) once first-pass results were reused (<code>HISTORY.md</code>). No end-to-end time of a current default run is recorded.</p>
+    </div>
+  </section>
+
+  <!-- 5 -->
+  <section id="stands" aria-labelledby="stands-title">
+    <div class="head">
+      <span class="eyebrow">5 · Status</span>
+      <h2 id="stands-title">Where it stands</h2>
+      <p class="muted">The review of 2026-09-23 and 24 measured the default path on three real stacks: Monopoles (10 interfaces), C. elegans FemalePN and C. elegans MaleMeiosis. Its scripts are in <code>scratch-workspace/stitch-review/</code> (local, not in git); their printed results exist only in that session's record, and the data were not on this machine to measure again. No stitcher code has changed since, so the findings still describe the code.</p>
+    </div>
+    <div class="panel stand">
+      <div class="stand-row">
+        <span class="status ok">Built</span>
+        <p><b>The default path, end to end</b> (pandorica 1.5.0): image coarse pose, microtubule warp with the bootstrap, rescue and scale gate, image fill, Z-blended export on CPU, CUDA or MPS, with the merged, chained graph. 30 test files, all synthetic except three structure-only smoke tests on FemalePN.</p>
+      </div>
+      <div class="stand-row">
+        <span class="status ok">Ruled out</span>
+        <p><b>Tilted section surfaces and a missing slab between sections.</b> The fitted surface tilt is at most <span class="nums">0.06°</span> per section on Monopoles, <span class="nums">0.15°</span> on FemalePN and <span class="nums">0.12°</span> on MaleMeiosis, so the flat 15% band misses at most 1% of the ends. On 10 Monopoles interfaces the gap estimate has a median of <span class="nums">+21 Å</span> (from −4 to +31 Å): small, not exactly zero, and the stub slope explains 0–2% of the residual on the interfaces recorded. Extrapolating the ends across the gap would not help.</p>
+      </div>
+      <div class="stand-row">
+        <span class="status hint">Finding</span>
+        <p><b>The assignment counts pairs before quality.</b> A pair that fails a gate gets a cost of 10 times the largest real cost plus 100 (<code>_assign</code> in <code>matching/matcher.py</code>), so one more pair always outweighs a better routing. With a price of 0.35 for leaving an end unmatched, <span class="nums">5.1%</span> of the pairs (479 of 9,405) would change on Monopoles; on 7 of 10 interfaces the pairs that change sit 0.97–1.48 ρ from their neighbours' consensus now, against 0.13–0.17 ρ with the price; on 2 interfaces the price is worse. One match pass at hand-recorded poses, and "consensus" is a proxy, not ground truth. The review's best lead for improvement.</p>
+      </div>
+      <div class="stand-row">
+        <span class="status hint">Finding</span>
+        <p><b>The bootstrap keeps its first guesses, and the joint split has no near-vertical guard.</b> 92–97% of the first pass's pairs survive to the second on 3 Monopoles interfaces. <code>split_chains_at_joints</code> judges near-vertical microtubules by their XY direction, which is noise for them: on Monopoles 39% of near-vertical microtubules (106) have two halves more than 45° apart within one section, so real ones may be split. The jog cut is a separate check on matches and does not prevent this.</p>
+      </div>
+      <div class="stand-row">
+        <span class="status hint">Finding</span>
+        <p><b>The export's inverse is first-order, and the summed warp is not checked.</b> On Monopoles with Z-blend the volume lands within a median of <span class="nums">0.10–0.50 px</span> and a 99th percentile of <span class="nums">1.05–3.11 px</span> of an exact inverse, but up to 37 px on sec08→09 and sec09→10, where the exact inverse did not converge, so those maxima are unreliable. The MT and fill warps are each checked alone; their sum is not. Whether the 48 × 48 check misses steep local warps is not confirmed: the fine-grid measurement was stopped.</p>
+      </div>
+      <div class="stand-row">
+        <span class="status hint">Not run</span>
+        <p><b>Checks in the code that the default path never calls.</b> A–P polarity and the dense-intensity verification need section images, which <code>run_stitch</code> never passes, in any mode. The image and microtubule cross-check (<code>reconcile_image_mt</code>) is called only by its tests, although the README describes it as running. The image's review marks reach the log only, and the overall verdict is printed but changes no output.</p>
+      </div>
+      <div class="stand-row">
+        <span class="status open">Docs</span>
+        <p><b>Text to correct.</b> The README's ρ points to <code>transform/scale.py</code>, whose <code>rho</code> is a mean over all traced points and is not used by the pipeline (the pipeline uses the median end spacing). <code>HOW_IT_WORKS.md</code> says the sweep "never gets fooled by symmetry", while <code>HISTORY.md</code> records a grossly wrong image rotation on a near-circular section. The matcher's docstring gives the smoothness gates as 30° and 45°; the defaults are 45° and 60°. <code>eggshell_rotation.py</code> is imported nowhere.</p>
+      </div>
+      <div class="stand-row">
+        <span class="status run">Next</span>
+        <p><b>Ground truth.</b> Curated Amira Serial Section Aligner stacks (manual and checked automatic matches, plus ends marked as unmatched) would score the matcher and the rescue independently of pandorica's own errors; the file format is decoded, and the work is paused until a curated stack is chosen. Then: a "no partner" price in the assignment, a near-vertical guard in the joint split, and the warp check on the summed field. From the README: tune A–P polarity on real data, resolve flagged interfaces beyond flagging, allocate only occupied canvas tiles, couple microtubules across several gaps, load input volumes in slabs, and validate on more datasets.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6 -->
+  <section id="settings" aria-labelledby="set-title">
+    <div class="head">
+      <span class="eyebrow">6 · Reference</span>
+      <h2 id="set-title">Default settings</h2>
+      <p class="muted">The values a plain <code>pandorica stitch</code> run uses. The first group are flags of <code>run_stitch</code>; the rest are function defaults and module constants (file in brackets, relative to <code>pandorica/stitch/</code>). Lengths in ρ unless marked.</p>
+    </div>
+    <div class="panel tablewrap">
+      <table>
+        <thead><tr><th>Setting</th><th>Default</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr class="group"><th colspan="3">Run (flags of pandorica stitch)</th></tr>
+          <tr><td><code>image_fill</code></td><td class="v">True</td><td>Align the regions without microtubules from the image (needs volumes).</td></tr>
+          <tr><td><code>method</code></td><td class="v">"ncc"</td><td>Image metric of the fill: <code>ncc</code>, <code>grad</code> or <code>mi</code>. The coarse pose uses <code>ncc</code> when <code>mi</code> is chosen.</td></tr>
+          <tr><td><code>warp_omega</code></td><td class="v">0.3</td><td>Curl bound Ω of the MT warp and the fill (the library default in <code>stitch_sections</code> is 1.0).</td></tr>
+          <tr><td><code>warp_tangent_weight</code></td><td class="v">0.4</td><td>Pull of the tangent points; 0 turns them off (library default 0.0).</td></tr>
+          <tr><td><code>cut_vertical_jog_rho</code></td><td class="v">2.0</td><td>Jog cut for near-vertical pairs; 0 turns it off.</td></tr>
+          <tr><td><code>constellation_weight</code> · <code>_k</code> · <code>_r_max_rho</code></td><td class="v">0.0 · 10 · 6.0</td><td>Neighbourhood-pattern term in the match cost: weight, neighbours, radius.</td></tr>
+          <tr><td><code>zblend</code></td><td class="v">True</td><td>Split each warp between its two faces and blend through Z.</td></tr>
+          <tr><td><code>cpd_coarse</code></td><td class="v">True</td><td>Coherent Point Drift rotation search (rescue; graphs-only path).</td></tr>
+          <tr><td><code>downscale</code></td><td class="v">1</td><td>Export every n-th voxel in each axis.</td></tr>
+          <tr><td><code>use_gpu</code> · <code>gpu_chunk</code></td><td class="v">None · None</td><td>GPU picked automatically (CUDA, then MPS, else CPU); chunk sized from free memory.</td></tr>
+          <tr><td><code>warp_coarse_px</code></td><td class="v">8</td><td>Grid spacing (canvas pixels) for evaluating the warp; 0 = every pixel.</td></tr>
+          <tr><td><code>trim_to_mts</code> · <code>mt_pad_frac</code></td><td class="v">False · 0.05</td><td>Canvas around the microtubules, with padding, instead of all corners.</td></tr>
+          <tr><td><code>workers</code></td><td class="v">None</td><td>Processes for image matching; None = CPU count minus 2.</td></tr>
+          <tr><td><code>allow_scale</code> · <code>lambda_scale</code></td><td class="v">False · 1.0</td><td>Graphs-only path: per-section scale in the global solve, and its pull towards 1.</td></tr>
+          <tr><td><code>save_inspect</code> · <code>dev</code></td><td class="v">False · False</td><td>Write <code>stitch_inspect.npz</code>; print every detail.</td></tr>
+          <tr class="group"><th colspan="3">Faces and ends</th></tr>
+          <tr><td><code>z_band_fraction</code></td><td class="v">0.15</td><td>Share of a section's Z range in which an end counts as on the face (<code>pipeline/stitcher.py</code>).</td></tr>
+          <tr><td><code>n_slices</code> · <code>load_downscale</code></td><td class="v">10 · 2</td><td>Face slab and resolution step for the coarse pose (<code>image_pose.py</code>).</td></tr>
+          <tr><td><code>n_slices</code> · <code>proj_downscale</code></td><td class="v">10 · 4</td><td>The same for the fill (<code>image_warp.py</code>).</td></tr>
+          <tr class="group"><th colspan="3">Image coarse pose (image_pose.py)</th></tr>
+          <tr><td><code>match_grid</code></td><td class="v">12</td><td>Cells per side of the block match.</td></tr>
+          <tr><td><code>_SWEEP_STEP</code></td><td class="v">15.0°</td><td>Angle step of the ranking sweep; the refinement uses a fifth of it.</td></tr>
+          <tr><td><code>_BRANCH_FRAC</code> · <code>_ROT_TOL</code></td><td class="v">0.85 · 10.0°</td><td>Support share that makes a branch tie; largest gap to the contour angle.</td></tr>
+          <tr><td><code>min_inlier_frac</code> · <code>_MIN_CELLS</code></td><td class="v">0.12 · 12</td><td>Fewer agreeing cells than this: shift set to 0, marked for review.</td></tr>
+          <tr><td><code>_AFFINE_HALF</code> · <code>_ANISO_GATE</code></td><td class="v">20 px · 0.02</td><td>Window of the stretch fit; smallest stretch that is committed.</td></tr>
+          <tr><td><code>_AFFINE_SV_BAND</code> · <code>_AFFINE_DET_BAND</code></td><td class="v">0.85–1.15 · 0.90–1.10</td><td>Clamp on each stretch and on the area change.</td></tr>
+          <tr class="group"><th colspan="3">Matching (matching/matcher.py, pipeline/core.py)</th></tr>
+          <tr><td><code>max_dist_rho</code> · <code>min_dist_A</code> · <code>max_dist_A</code></td><td class="v">5.0 · 500 · 2500</td><td>Distance gate in ρ, clamped in Å.</td></tr>
+          <tr><td><code>max_angle_deg</code> · <code>w_dist</code></td><td class="v">30 · 0.7</td><td>Direction gate; weight of distance against direction in the cost.</td></tr>
+          <tr><td><code>sign_min_xy</code> · <code>sign_min_cos</code></td><td class="v">0.2 · 0.0</td><td>Fold-back gate: applies when both in-plane directions exceed 0.2.</td></tr>
+          <tr><td><code>dup_frac</code> · <code>max_resid_rho</code></td><td class="v">0.1 · 2.0</td><td>Deduplication radius; outlier residual.</td></tr>
+          <tr><td><code>uncross_neighbour_rho</code> · <code>uncross_dir_veto_margin</code></td><td class="v">2.0 · 0.2</td><td>Radius of the X-cross check; how much the tangents may prefer the crossing and still lose.</td></tr>
+          <tr><td><code>smoothness_max_tangent_deg</code> · <code>_chord_tangent_deg</code> · <code>_chord_check_rho</code></td><td class="v">45 · 60 · 1.0</td><td>One-fibre check: tangent gap, chord gap, shortest chord checked.</td></tr>
+          <tr><td>bootstrap passes · least gain</td><td class="v">6 · 0.01</td><td><code>_BOOTSTRAP_MAX_PASSES</code>, <code>_BOOTSTRAP_MIN_GAIN</code>.</td></tr>
+          <tr class="group"><th colspan="3">Warp and QC (pipeline/stitcher.py, transform/warp.py)</th></tr>
+          <tr><td><code>warp_eps</code></td><td class="v">0.05</td><td>Lowest det J allowed.</td></tr>
+          <tr><td><code>warp_grid_n</code> · <code>warp_pad</code></td><td class="v">48 · 0.1</td><td>Check grid and its padding.</td></tr>
+          <tr><td>smoothing ladder</td><td class="v">0, 1, 5, 20, 100</td><td><code>_DEFAULT_SMOOTHINGS</code>, in ρ units.</td></tr>
+          <tr><td><code>tangent_step</code> · <code>tangent_min_xy</code></td><td class="v">0.2 · 0.2</td><td>Step of the tangent points; least in-plane direction to use a pair.</td></tr>
+          <tr><td><code>qc_min_match_fraction</code></td><td class="v">0.3</td><td>Least match fraction to accept and to chain; also the rescue's trigger.</td></tr>
+          <tr><td><code>qc_max_shift_incoherence_rho</code></td><td class="v">2.5</td><td>Largest shift spread to accept and to chain.</td></tr>
+          <tr><td><code>qc_max_tangent_deg</code></td><td class="v">20.0</td><td>Kept for compatibility; not used as a gate.</td></tr>
+          <tr class="group"><th colspan="3">Rescue and scale gate (pipeline/core.py, pipeline/stitcher.py)</th></tr>
+          <tr><td><code>cpd_seeds</code> · <code>cpd_w</code> · <code>cpd_quantile</code></td><td class="v">12 · 0.4 · 0.5</td><td>Seed angles, outlier weight, residual quantile for ranking seeds.</td></tr>
+          <tr><td><code>_RESCUE_ANISO_GATE</code> · <code>_RESCUE_ANISO_MIN_PAIRS</code></td><td class="v">0.05 · 12</td><td>Stretch recovery inside the rescue.</td></tr>
+          <tr><td><code>_SCALE_GATE_MIN_SV_DEV</code> · <code>_SCALE_GATE_MARGIN</code></td><td class="v">0.05 · 0.10</td><td>Stretch that gets scored; margin by which rotation alone must win.</td></tr>
+          <tr class="group"><th colspan="3">Image fill (image_warp.py)</th></tr>
+          <tr><td><code>grid</code> · <code>half</code> · <code>search</code></td><td class="v">16 · 64 · 64</td><td>Cells per side; window half-size and search radius in pixels.</td></tr>
+          <tr><td><code>min_peakiness</code> · <code>mask_radius_px</code></td><td class="v">4.0 · 24</td><td>Least peak sharpness; growth of the microtubule mask in pixels.</td></tr>
+          <tr class="group"><th colspan="3">Export and graphs-only path</th></tr>
+          <tr><td><code>chain_split_max_angle_deg</code></td><td class="v">45.0</td><td>Largest XY direction change at a joint before the chain is split (<code>stitch.py</code>).</td></tr>
+          <tr><td><code>continuity_tol</code> · <code>lambda_smooth</code></td><td class="v">30.0 · 0.0</td><td>Graphs-only path: trend tolerance for flagged rotations; smoothness of the pose solve.</td></tr>
+          <tr><td><code>intensity_margin</code> · <code>intensity_min_angle</code></td><td class="v">0.02 · 15.0</td><td>Dense-intensity verification; runs only when section images are given, which <code>run_stitch</code> never does.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer>
+    <p>Plain-language tour: <a href="../pandorica/stitch/HOW_IT_WORKS.md"><code>HOW_IT_WORKS.md</code></a>. Reference and related work: <a href="../pandorica/stitch/README.md"><code>pandorica/stitch/README.md</code></a>. Change log: <a href="../HISTORY.md"><code>HISTORY.md</code></a>. Napari validator: <a href="../pandorica/napari/README.md"><code>pandorica/napari/README.md</code></a>.</p>
+    <p>The diagrams are drawn by hand in this page from the code at commit <code>bc7b222</code>; the sketches and the support plot are illustrations, not computed data.</p>
+  </footer>
+</div>
+</body>
+</html>
