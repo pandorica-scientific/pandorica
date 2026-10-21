@@ -44,7 +44,7 @@ dependencies = [
     # Image registration
     "imreg",
     # CLI
-    "click>=8.0",
+    "click>=8.5.0",
     "rich>=13.0",
     "docstring_parser>=0.15",
 ]
@@ -66,19 +66,19 @@ pandorica = "pandorica.napari:napari.yaml"
 [dependency-groups]
 dev = [
     # Code testing
-    "pytest>7.0.0",
+    "pytest>=9.1.1",
     # PEP-8
-    "flake8>5.0.0",
-    "black>23.0.0",
+    "flake8>=7.4.1",
+    "black>=26.10.1",
     # Build package
     "setuptools>=84.0.0",
-    "build>=1.2.0",
+    "build>=1.6.1",
     "twine>=7.0.0",
     # Plots
     "matplotlib>3.5.2",
     # Jupyter
     "jupyter>=1.0.0",
-    "notebook>6.5.2",
+    "notebook>=7.6.3",
     # Documentation
     "sphinx",
     "myst_parser",
