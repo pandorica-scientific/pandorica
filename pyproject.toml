@@ -5,7 +5,7 @@
 # See LICENSE for details.
 
 [build-system]
-requires = ["setuptools>=84.0.0", "wheel"]
+requires = ["setuptools>=84.1.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -71,7 +71,7 @@ dev = [
     "flake8>=7.4.1",
     "black>=26.10.1",
     # Build package
-    "setuptools>=84.0.0",
+    "setuptools>=84.1.0",
     "build>=1.6.1",
     "twine>=7.0.0",
     # Plots
