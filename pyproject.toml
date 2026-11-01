@@ -5,7 +5,7 @@
 # See LICENSE for details.
 
 [build-system]
-requires = ["setuptools>=84.0.0", "wheel"]
+requires = ["setuptools>=84.2.1", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -66,12 +66,12 @@ pandorica = "pandorica.napari:napari.yaml"
 [dependency-groups]
 dev = [
     # Code testing
-    "pytest>=9.1.1",
+    "pytest>=9.2.0",
     # PEP-8
     "flake8>=7.4.1",
     "black>=26.10.1",
     # Build package
-    "setuptools>=84.0.0",
+    "setuptools>=84.2.1",
     "build>=1.6.1",
     "twine>=7.0.0",
     # Plots
